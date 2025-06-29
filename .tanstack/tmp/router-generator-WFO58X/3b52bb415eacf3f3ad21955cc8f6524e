@@ -1,0 +1,40 @@
+import { createFileRoute } from '@tanstack/react-router'
+export const Route = createFileRoute('/dashboard')({
+  component: DashboardLayout,
+  beforeLoad: async ({ context }) => {
+    try {
+      // ✅ 1. Vérifier l'authentification
+      const authData = context.queryClient?.getQueryData(['auth'])
+      const isAuthenticated = authData?.data?.isAuthenticated
+      const user = authData?.data?.user
+
+      if (!isAuthenticated || !user) {
+        console.log('❌ Not authenticated, redirecting to login')
+        throw redirect({ to: '/login' })
+      }
+
+      console.log('✅ User authenticated')
+
+      // ✅ 2. Vérifier SEULEMENT le cache, pas de fetch
+      const sessionData = context.queryClient?.getQueryData(SESSION_QUERY_KEY)
+      
+      if (sessionData) {
+        console.log('✅ Session data found in cache')
+      } else {
+        console.log('ℹ️ No session data in cache (will be loaded by components)')
+      }
+
+      return {
+        user,
+        isAuthenticated,
+        sessionPreloaded: !!sessionData
+      }
+    } catch (error) {
+      if (error instanceof Response) {
+        throw error // Rethrow redirections
+      }
+      console.error('❌ Error in dashboard route beforeLoad:', error)
+      throw redirect({ to: '/login' })
+    }
+  }
+})

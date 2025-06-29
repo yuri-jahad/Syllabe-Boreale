@@ -2,13 +2,27 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
+    "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@eden": ["src/app/client"],
+      "@routes/*": ["src/app/routes/*"],
+      "@features/*": ["src/features/*"],
+      "@auth/*": ["src/features/auth/*"],
+      "@word-finder/*": ["src/features/word-finder/*"],
+      "@charts/*": ["src/features/charts/*"],
+      "@management/*": ["src/features/management/*"],
+      "@settings/*": ["src/features/settings/*"],
+      "@shared/*": ["src/features/shared/*"],
+      "@styles/*": ["src/styles/*"],
+      "@backend/*": ["../backend/src/*"],
+      "@assets/*": ["src/assets/*"],
+      "~styled-system/*": ["styled-system/*"]
     },
 
     /* Bundler mode */
@@ -26,5 +40,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "styled-system"]
 }

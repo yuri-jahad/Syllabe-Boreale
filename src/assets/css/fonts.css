@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'JBM-semibold';
+  src: url('../fonts/JBM-semibold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'RL-bold';
+  src: url('../fonts/Raleway-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'RL-medium';
+  src: url('../fonts/Raleway-Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Amazon';
+  src: url('../fonts/Amazon.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Alessa';
+  src: url('../fonts/Alessia.otf') format('truetype');
+}
