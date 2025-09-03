@@ -17,16 +17,13 @@ import {
 } from '@lists/lists.services'
 import type { SearchResult, SearchParams } from '@lists/lists.services'
 import { db } from '@database/database.config' // ← Import manquant
-import { insertUserFixed } from '@auth/auth.repositories'
 
-// Helper function pour extraire le message d'erreur
 function getErrorMessage (error: unknown): string {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
   return 'Unknown error'
 }
 
-// Helper function pour extraire le code d'erreur
 function getErrorCode (error: unknown): string | undefined {
   if (error instanceof Error && 'code' in error) {
     return (error as any).code

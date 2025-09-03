@@ -1,5 +1,6 @@
 export const authGuard = {
   beforeHandle: ({ isAuthenticated, set }: any) => {
+    console.log('OK')
     if (!isAuthenticated) {
       set.status = 401
       return {

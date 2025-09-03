@@ -30,7 +30,7 @@ export const createUserHandler = async ({
         code: 'USER_ALREADY_EXISTS'
       }
     }
-    const newUser = await createUser(body) // ou createUserWithInsertable(body)
+    const newUser = await createUser(body) 
     if (!newUser) {
       set.status = 500
       return {

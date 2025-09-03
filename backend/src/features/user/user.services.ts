@@ -6,7 +6,6 @@ import type { CreateUserRequest } from '@auth/auth.types'
 import { insertUserFixed } from '@auth/auth.repositories'
 import type { User } from '@user/user.types'
 
-// 🎯 Types pour compatibilité avec votre code existant
 interface UploadResult {
   secure_url: string
   public_id: string
@@ -45,25 +44,21 @@ interface UsageStats {
   error?: string
 }
 
-// 🚀 SERVICE AVATAR LOCAL SIMPLIFIÉ - 2 images par utilisateur max
 export class AvatarService {
   private static uploadCount = 0
   private static monthlyReset = new Date().getMonth()
   private static readonly MONTHLY_LIMIT = 10000
   private static readonly UPLOAD_DIR = './public/uploads/avatars'
   private static readonly TEMP_DIR = './public/uploads/temp'
-  private static readonly BASE_URL =
-    process.env.BASE_URL || 'http://localhost:3000'
+  private static readonly BASE_URL = `http://localhost:${process.env.PORT}`
   private static readonly MAX_SIZE = 10 * 1024 * 1024 // 10MB
   private static ffmpegAvailable: boolean | null = null
 
-  // 🎯 Configuration simplifiée - seulement 2 tailles
   private static readonly AVATAR_SIZES = {
     small: { width: 50, height: 50, quality: 80 },
     medium: { width: 150, height: 150, quality: 85 }
   }
 
-  // 🧩 Cache intelligent
   private static cache = new Map<string, { data: any; timestamp: number }>()
   private static readonly CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 
@@ -94,9 +89,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🔧 Vérification de la disponibilité de FFmpeg
-   */
   private static async checkFFmpeg (): Promise<boolean> {
     if (this.ffmpegAvailable !== null) {
       return this.ffmpegAvailable
@@ -122,9 +114,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🎬 Exécution de commande FFmpeg
-   */
   private static async runFFmpeg (args: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
       const child = spawn('ffmpeg', args, { stdio: 'pipe' })
@@ -153,18 +142,12 @@ export class AvatarService {
     })
   }
 
-  /**
-   * 🔍 Détection du type de média
-   */
   private static detectMediaType (mimeType: string): 'image' | 'gif' | 'video' {
     if (mimeType === 'image/gif') return 'gif'
     if (mimeType.startsWith('video/')) return 'video'
     return 'image'
   }
 
-  /**
-   * 🗑️ Nettoyage complet des anciens avatars d'un utilisateur
-   */
   private static async deleteOldAvatars (userId: number): Promise<void> {
     try {
       const files = await readdir(this.UPLOAD_DIR)
@@ -189,9 +172,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🎞️ Traitement optimisé des GIFs/Vidéos avec FFmpeg
-   */
   private static async processAnimatedMedia (
     inputBuffer: Buffer,
     userId: number,
@@ -215,7 +195,6 @@ export class AvatarService {
     const baseFilename = `user_${userId}_${timestamp}`
 
     try {
-      // 🎯 Génération des 2 tailles optimisées en WebM (meilleur format pour animations)
       for (const [size, config] of Object.entries(this.AVATAR_SIZES)) {
         const outputFile = join(this.UPLOAD_DIR, `${baseFilename}_${size}.webm`)
 
@@ -232,7 +211,7 @@ export class AvatarService {
           '0',
           '-pix_fmt',
           'yuva420p',
-          '-an', // Pas d'audio
+          '-an',
           '-f',
           'webm',
           '-y',
@@ -263,9 +242,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🖼️ Traitement optimisé des images statiques
-   */
   private static async processStaticImage (
     inputBuffer: Buffer,
     userId: number,
@@ -289,13 +265,11 @@ export class AvatarService {
         position: 'centre'
       })
 
-      // Essayer AVIF d'abord (meilleur format), puis WebP, puis JPEG
       let buffer: Buffer
       let format: string
       let extension: string
 
       try {
-        // 1. AVIF (meilleur compression)
         buffer = await baseImage
           .clone()
           .avif({
@@ -307,7 +281,6 @@ export class AvatarService {
         extension = 'avif'
       } catch {
         try {
-          // 2. WebP (fallback)
           buffer = await baseImage
             .clone()
             .webp({
@@ -318,7 +291,6 @@ export class AvatarService {
           format = 'webp'
           extension = 'webp'
         } catch {
-          // 3. JPEG (compatibilité maximale)
           buffer = await baseImage
             .clone()
             .jpeg({
@@ -331,7 +303,6 @@ export class AvatarService {
         }
       }
 
-      // Sauvegarde du fichier
       const filename = `${baseFilename}_${size}.${extension}`
       await Bun.write(join(this.UPLOAD_DIR, filename), buffer)
       processed[size] = buffer
@@ -357,9 +328,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🌐 Génération d'URLs optimisées simplifiées
-   */
   private static generateOptimizedUrls (
     userId: number,
     timestamp: number,
@@ -367,13 +335,12 @@ export class AvatarService {
   ): OptimizedUrls {
     const baseUrl = `${this.BASE_URL}/uploads/avatars`
     const baseFilename = `user_${userId}_${timestamp}`
-    const extension = format === 'webm' ? 'webm' : 'avif' // Prioriser AVIF pour les images
-
+    const extension = format === 'webm' ? 'webm' : 'avif'
     return {
       original: `${baseUrl}/${baseFilename}_medium.${extension}`,
       small: `${baseUrl}/${baseFilename}_small.${extension}`,
       medium: `${baseUrl}/${baseFilename}_medium.${extension}`,
-      large: `${baseUrl}/${baseFilename}_medium.${extension}`, // Même que medium pour compatibilité
+      large: `${baseUrl}/${baseFilename}_medium.${extension}`,
       webp: `${baseUrl}/${baseFilename}_medium.${extension}`,
       avif:
         format !== 'webm'
@@ -386,9 +353,6 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 📤 Upload principal simplifié
-   */
   static async uploadAvatar (
     userId: number,
     file: Buffer,
@@ -452,7 +416,7 @@ export class AvatarService {
         is_overwrite: true
       }
 
-      console.log({result})
+      console.log({ result })
 
       this.setCache(`avatar-${userId}`, result)
       this.setCache(`all-urls-${userId}`, optimizedUrls)
@@ -463,14 +427,10 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🗑️ Suppression d'avatar
-   */
   static async deleteAvatar (userId: number): Promise<boolean> {
     try {
       await this.deleteOldAvatars(userId)
 
-      // Nettoyage cache
       this.cache.delete(`avatar-${userId}`)
       this.cache.delete(`all-urls-${userId}`)
       this.cache.delete(`image-exists-user_${userId}`)
@@ -487,9 +447,6 @@ export class AvatarService {
     return this.deleteAvatar(userId)
   }
 
-  /**
-   * ⚡ Vérifications rapides
-   */
   static async canUpload (): Promise<boolean> {
     const currentMonth = new Date().getMonth()
     if (currentMonth !== this.monthlyReset) {
@@ -503,9 +460,7 @@ export class AvatarService {
     return this.canUpload()
   }
 
-  /**
-   * 📊 Stats d'usage
-   */
+
   static async getUsageStatsFast (): Promise<UsageStats> {
     const cacheKey = 'usage-stats'
     const cached = this.getCached<UsageStats>(cacheKey)
@@ -581,9 +536,7 @@ export class AvatarService {
     return this.getUsageStatsFast()
   }
 
-  /**
-   * 🖼️ Génération d'URLs
-   */
+
   static getAvatarUrl (
     userId: number,
     size: 'small' | 'medium' | 'large' = 'medium',
@@ -624,9 +577,7 @@ export class AvatarService {
     return { large: urls, medium: urls, small: urls }
   }
 
-  /**
-   * 🔍 Vérification d'existence
-   */
+
   static async avatarExists (userId: number): Promise<boolean> {
     const cacheKey = `avatar-exists-${userId}`
     const cached = this.getCached<boolean>(cacheKey)
@@ -650,9 +601,7 @@ export class AvatarService {
     }
   }
 
-  /**
-   * 🔧 Utilitaires
-   */
+
   static resetLocalCounter (): void {
     this.uploadCount = 0
     console.log('🔄 Upload counter reset')
@@ -675,7 +624,6 @@ export class AvatarService {
   }
 }
 
-// 🔧 Fonction de création d'utilisateur (inchangée)
 export async function createUser (
   userData: CreateUserRequest
 ): Promise<User | null> {
@@ -700,5 +648,4 @@ export async function createUser (
   }
 }
 
-// ✅ Export pour compatibilité parfaite
 export { AvatarService as CompressedAvatarService }

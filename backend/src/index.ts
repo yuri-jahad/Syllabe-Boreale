@@ -6,10 +6,12 @@ import { staticPlugin } from '@elysiajs/static'
 import Elysia from 'elysia'
 
 const app = new Elysia()
-  .use(staticPlugin({
-    assets: "./public/uploads/avatars",
-    prefix: "/uploads/avatars"
-  }))
+  .use(
+    staticPlugin({
+      assets: './public/uploads/avatars',
+      prefix: '/uploads/avatars'
+    })
+  )
   .use(plugins.jwt)
   .use(plugins.logger)
   .use(plugins.cookie)
