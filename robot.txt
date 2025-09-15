@@ -1,0 +1,23 @@
+# robots.txt pour Syllabe Boréale
+
+User-agent: *
+Allow: /
+
+# Fichiers à exclure de l'indexation
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /assets/temp/
+
+# Autoriser l'accès aux assets importants
+Allow: /assets/*.css
+Allow: /assets/*.js
+Allow: /assets/*.jpg
+Allow: /assets/*.png
+Allow: /assets/*.webp
+Allow: /assets/*.svg
+
+# Sitemap
+Sitemap: https://syllabe-boreale.fr/sitemap.xml
+

@@ -4,18 +4,15 @@ import {
 } from '@shared/components/lists-gallery/lists-gallery.style'
 import { useStore } from '@/store/store'
 import { useSession } from '@shared/hooks/shared-session.hook' // ✅ Import du hook
-import { colors } from '../../global/global.token'
 
 export default function ListsGallery () {
   const { data: sessionData, isLoading, error } = useSession()
   const { setCurrentList, currentList } = useStore()
 
   const handleOnClick = (e: string) => {
-    console.log(sessionData)
     setCurrentList(e)
   }
 
-  // Gestion du loading
   if (isLoading) {
     return (
       <div className={ListsGalleryCSS}>
@@ -48,7 +45,7 @@ export default function ListsGallery () {
       {listNames.map((listName: string, index: number) => (
         <div
           className={ListCSS}
-          style={currentList === listName ? { backgroundColor:"#00a8d4" } : {}}
+          style={currentList === listName ? { backgroundColor: '#1f6feb' } : {}}
           key={`${listName}-${index}`}
           onClick={() => handleOnClick(listName)}
         >

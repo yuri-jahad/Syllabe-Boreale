@@ -1,20 +1,47 @@
 @font-face {
   font-family: 'JBM-semibold';
-  src: url('../fonts/JBM-semibold.ttf') format('truetype');
+  src: url('../fonts/JBM-semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'RL-bold';
-  src: url('../fonts/Raleway-Bold.ttf') format('truetype');
+  font-family: 'Raleway';
+  src: url('../fonts/Raleway-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'RL-medium';
-  src: url('../fonts/Raleway-Medium.ttf') format('truetype');
+  font-family: 'Raleway';
+  src: url('../fonts/Raleway-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
   font-family: 'Amazon';
-  src: url('../fonts/Amazon.ttf') format('truetype');
+  src: url('../fonts/Amazon.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'Alessa';
-  src: url('../fonts/Alessia.otf') format('truetype');
+  font-family: 'Alessia';
+  src: url('../fonts/Alessia.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('../fonts/Geist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }

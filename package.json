@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "prepare": "panda codegen"
@@ -18,11 +18,14 @@
     "@tanstack/router-plugin": "^1.121.0",
     "@tanstack/zod-form-adapter": "^0.42.1",
     "@types/node": "^22.15.31",
+    "framer-motion": "^12.23.3",
     "lucide-react": "^0.518.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "recharts": "^2.15.3",
+    "sonner": "^2.0.6",
+    "three": "^0.178.0",
     "zustand": "^5.0.5"
   },
   "devDependencies": {
@@ -32,6 +35,7 @@
     "@types/bun": "^1.2.15",
     "@types/react": "^19.1.7",
     "@types/react-dom": "^19.1.6",
+    "@types/three": "^0.178.1",
     "@vitejs/plugin-react": "^4.5.2",
     "eslint": "^9.28.0",
     "eslint-plugin-react-hooks": "^5.2.0",

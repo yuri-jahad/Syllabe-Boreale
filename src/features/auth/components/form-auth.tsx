@@ -2,7 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { useLogin } from '@auth/hooks/auth.hooks'
 import { useNavigate } from '@tanstack/react-router'
 import { Route as DashboardRoute } from '@/app/routes/dashboard/home'
-import forestImg from '@/assets/images/forest-glacial.png'
+import forestImg from '@/assets/images/forest-glacial.webp'
 
 import {
   BackgroundCSS,
@@ -12,9 +12,9 @@ import {
   ErrorMessageCSS,
   InputContainerCSS,
   InfoTextCSS,
-  GuestInfoCSS,
+  DemoInfoCSS,
   KeyboardKeyCSS,
-  GuestInfoTitleCSS,
+  DemoInfoTitleCSS,
   CredentialLabelCSS,
   CredentialValueCSS,
   LoginContainerCSS
@@ -26,17 +26,12 @@ export default function Login () {
 
   const form = useForm({
     defaultValues: {
-      username: '',
-      password: ''
+      username: 'demo',
+      password: 'demo'
     },
     onSubmit: async ({ value }) => {
       try {
-        const result = await loginMutation.mutateAsync(value)
-
-        console.log(result.data)
-        console.log('Login successful!')
-        console.log(DashboardRoute.fullPath)
-        console.log(DashboardRoute.fullPath)
+        await loginMutation.mutateAsync(value)
         navigate({ to: DashboardRoute.fullPath })
       } catch (error) {
         console.error('Login error:', error)
@@ -56,7 +51,7 @@ export default function Login () {
           form.handleSubmit()
         }}
       >
-        <div className={TitleCSS}>ICE POETRY</div>
+        <div className={TitleCSS}>Syllabe Boréale</div>
 
         <div
           className={InputContainerCSS}
@@ -121,7 +116,6 @@ export default function Login () {
             />
           </div>
 
-          {/* "Press Enter" amélioré */}
           <div className={InfoTextCSS}>
             Press <span className={KeyboardKeyCSS}>Enter</span> to login
           </div>
@@ -133,7 +127,6 @@ export default function Login () {
           </p>
         )}
 
-        {/* Bouton caché pour la soumission par Enter */}
         <button
           type='submit'
           disabled={loginMutation.isPending}
@@ -146,14 +139,13 @@ export default function Login () {
           {loginMutation.isPending ? 'Logging in...' : 'Login'}
         </button>
 
-        {/* Bloc d'information sur mobile, sera repositionné sur desktop par le CSS */}
-        <div className={GuestInfoCSS}>
-          <p className={GuestInfoTitleCSS}>DEMO ACCOUNT</p>
+        <div className={DemoInfoCSS}>
+          <p className={DemoInfoTitleCSS}>DEMO ACCOUNT</p>
           <div className={CredentialLabelCSS}>
-            Username : <span className={CredentialValueCSS}>guest</span>
+            Username : <span className={CredentialValueCSS}>demo</span>
           </div>
           <div className={CredentialLabelCSS}>
-            Password : <span className={CredentialValueCSS}>hello</span>
+            Password : <span className={CredentialValueCSS}>demo</span>
           </div>
         </div>
       </form>

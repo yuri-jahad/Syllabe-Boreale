@@ -1,13 +1,6 @@
-// ===== IMPORTS =====
 import { memo } from 'react'
-import Header from '@shared/components/header/header'
-import PanelInfos from '@shared/components/panel-infos/panel-infos'
-import NavigationPanel from '@shared/components/panel-navigation/navigation-panel'
+import Scene from '@shared/components/scene/scene'
 import ListsGallery from '@shared/components/lists-gallery/lists-gallery'
-import {
-  DashboardBackgroundCSS,
-  DashboardCentralCSS
-} from '@shared/generic/generic.style'
 
 import { useSession } from '@shared/hooks/shared-session.hook'
 import { useStore } from '@/store/store'
@@ -36,28 +29,45 @@ const CHART_COLORS = {
 }
 
 const chartContainerStyle = css({
-  height: '30vh',
+  height: '32vh',
+  width: '100%',
+  maxWidth: '100%',
   backgroundColor: '#111827',
   borderRadius: 'lg',
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)',
   border: '1px solid #1F2937',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.2s ease',
+  overflow: 'hidden',
+
+  '@media (max-width: 768px)': {
+    height: '28vh',
+    width:'80vw'
+  },
+
+  '@media (max-width: 480px)': {
+    height: '25vh'
+  }
 })
 
 const statsContainerStyle = css({
   display: 'flex',
-  gap: '1',
-  width: '80vw',
-  margin: '0 auto'
+  gap: '4',
+  width: '100%',
+  margin: '0 auto 8px auto',
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    gap: '2'
+  }
 })
 
 const statsItemStyle = css({
   flex: '1',
-  padding: '3',
+  padding: '2',
   backgroundColor: '#111827',
   borderRadius: 'md',
   border: '1px solid #1F2937',
-  textAlign: 'center'
+  textAlign: 'center',
+  minWidth: '0'
 })
 
 const chartTitleStyle = css({
@@ -71,42 +81,55 @@ const chartTitleStyle = css({
 
 const chartsGridStyle = css({
   display: 'grid',
-  gridTemplateColumns: {
-    base: '1fr',
-    md: 'repeat(2, minmax(0, 0.8fr))',
-    lg: 'repeat(2, minmax(0, 0.8fr))'
-  },
   gap: '2',
-  width: '80vw',
-  margin: '0 auto',
-  justifyContent: 'center'
+  width: '100%',
+  maxWidth: '100%',
+
+  gridTemplateColumns: '1fr',
+
+  '@media (min-width: 768px)': {
+    gridTemplateColumns: 'repeat(2, 1fr)'
+  },
+
+  '@media (min-width: 1024px)': {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gridTemplateRows: 'repeat(3, auto)',
+    '& > :nth-child(5)': {
+      gridColumn: '1 / -1',
+      gridRow: '3'
+    }
+  }
 })
 
 const loadingStyle = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  height: '31vh',
+  height: '32vh',
   fontSize: 'md',
   color: '#718096',
   backgroundColor: '#111827',
   borderRadius: 'lg',
-  border: '1px solid #1F2937'
+  border: '1px solid #1F2937',
+
+  '@media (max-width: 768px)': {
+    height: '28vh'
+  },
+
+  '@media (max-width: 480px)': {
+    height: '25vh'
+  }
 })
 
 const mainContentStyle = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '2'
-})
-
-const headerSectionStyle = css({
-  display: 'flex',
-  flexDirection: { base: 'column', md: 'row' },
-  gap: '3',
-  alignItems: { md: 'center' },
-  justifyContent: 'space-between',
-  marginBottom: '3'
+  gap: '2',
+  padding: '12px',
+  width: '100%',
+  height: '100%',
+  maxWidth: '100%',
+  overflowX: 'hidden'
 })
 
 const statsValueStyle = css({
@@ -157,18 +180,18 @@ const tooltipConfig = {
   }
 }
 
-const ChartWrapper = ({ title, children }) => (
+const ChartWrapper = ({ title, children } : any) => (
   <div className={chartContainerStyle}>
     <h3 className={chartTitleStyle}>{title}</h3>
-    <div style={{ height: 'calc(100% - 45px)' }}>
-      <ResponsiveContainer width='95%' height='100%'>
+    <div style={{ height: 'calc(100% - 45px)', width: '100%' }}>
+      <ResponsiveContainer width='100%' height='100%'>
         {children}
       </ResponsiveContainer>
     </div>
   </div>
 )
 
-const NoData = ({ label }) => (
+const NoData = ({ label } : any) => (
   <div className={chartContainerStyle}>
     <div className={loadingStyle}>
       <div style={{ textAlign: 'center' }}>
@@ -177,18 +200,17 @@ const NoData = ({ label }) => (
         >
           •••
         </div>
-        <div style={{ fontSize: '0.875rem' }}>Aucune donnée disponible</div>
+        <div style={{ fontSize: '0.875rem' }}>No data available</div>
         <div
           style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '0.25rem' }}
         >
-          pour {label}
+          for {label}
         </div>
       </div>
     </div>
   </div>
 )
 
-// ===== COMPOSANTS STATS EN LIGNE =====
 const StatsDisplay = memo(() => {
   const { data } = useSession()
   const { currentList } = useStore()
@@ -196,7 +218,7 @@ const StatsDisplay = memo(() => {
   const counts = data?.data.allListsDetails.counts
   const totalWords = parseInt(counts?.word || '0')
   const currentCount = parseInt(counts?.[currentList] || '0')
-  const countNumber = parseInt(currentCount)
+  const countNumber = currentCount
 
   let percentage = 0
   if (totalWords > 0) {
@@ -206,15 +228,15 @@ const StatsDisplay = memo(() => {
   return (
     <div className={statsContainerStyle}>
       <div className={statsItemStyle}>
-        <div className={statsLabelStyle}>Mots dans {currentList}</div>
+        <div className={statsLabelStyle}>Words in {currentList}</div>
         <div className={statsValueStyle}>{countNumber.toLocaleString()}</div>
         <div className={statsSubtitleStyle}>
-          {countNumber === 0 ? 'aucun mot' : countNumber === 1 ? 'mot' : 'mots'}
+          {countNumber === 0 ? 'no words' : countNumber === 1 ? 'word' : 'words'}
         </div>
       </div>
 
       <div className={statsItemStyle}>
-        <div className={statsLabelStyle}>Pourcentage du total</div>
+        <div className={statsLabelStyle}>Percentage of total</div>
         <div className={statsPercentageStyle}>
           {totalWords === 0
             ? '0%'
@@ -224,7 +246,7 @@ const StatsDisplay = memo(() => {
         </div>
         <div className={statsSubtitleStyle}>
           {totalWords === 0
-            ? 'Aucune donnée'
+            ? 'No data'
             : `${currentCount.toLocaleString()} / ${totalWords.toLocaleString()}`}
         </div>
       </div>
@@ -232,7 +254,6 @@ const StatsDisplay = memo(() => {
   )
 })
 
-// ===== COMPOSANTS GRAPHIQUES ÉPURÉS =====
 const LettersChart = memo(() => {
   const { data } = useSession()
   const { currentList } = useStore()
@@ -241,7 +262,7 @@ const LettersChart = memo(() => {
   if (!chartData?.length) return <NoData label={currentList} />
 
   return (
-    <ChartWrapper title={`Distribution des lettres - ${currentList}`}>
+    <ChartWrapper title={`Letter distribution - ${currentList}`}>
       <BarChart
         data={chartData}
         margin={{ top: 10, right: 15, left: 15, bottom: 10 }}
@@ -253,7 +274,7 @@ const LettersChart = memo(() => {
         <Bar
           dataKey='count'
           fill={CHART_COLORS.primary}
-          name='Mots'
+          name='Words'
           radius={[2, 2, 0, 0]}
           opacity={0.9}
         />
@@ -270,7 +291,7 @@ const SyllablesBottomChart = memo(() => {
   if (!chartData?.length) return <NoData label={currentList} />
 
   return (
-    <ChartWrapper title={`Syllabes rares - ${currentList}`}>
+    <ChartWrapper title={`Rare syllables - ${currentList}`}>
       <AreaChart
         data={chartData}
         margin={{ top: 10, right: 15, left: 15, bottom: 10 }}
@@ -280,7 +301,7 @@ const SyllablesBottomChart = memo(() => {
         <YAxis {...axisConfig} />
         <Tooltip
           {...tooltipConfig}
-          formatter={value => [value, 'Syllabes']}
+          formatter={value => [value, 'Syllables']}
           labelFormatter={label => `${label} solution${label > 1 ? 's' : ''}`}
         />
         <Area
@@ -304,7 +325,7 @@ const WordLengthsChart = memo(() => {
   if (!chartData?.length) return <NoData label={currentList} />
 
   return (
-    <ChartWrapper title={`Distribution des longueurs - ${currentList}`}>
+    <ChartWrapper title={`Length distribution - ${currentList}`}>
       <BarChart
         data={chartData}
         margin={{ top: 10, right: 15, left: 15, bottom: 10 }}
@@ -316,7 +337,7 @@ const WordLengthsChart = memo(() => {
         <Bar
           dataKey='count'
           fill={CHART_COLORS.accent}
-          name='Mots'
+          name='Words'
           radius={[2, 2, 0, 0]}
           opacity={0.9}
         />
@@ -333,7 +354,7 @@ const UniqueLettersChart = memo(() => {
   if (!chartData?.length) return <NoData label={currentList} />
 
   return (
-    <ChartWrapper title={`Lettres uniques - ${currentList}`}>
+    <ChartWrapper title={`Unique letters - ${currentList}`}>
       <LineChart
         data={chartData}
         margin={{ top: 10, right: 15, left: 15, bottom: 10 }}
@@ -354,114 +375,104 @@ const UniqueLettersChart = memo(() => {
             strokeWidth: 1,
             fill: '#111827'
           }}
-          name='Mots'
+          name='Words'
         />
       </LineChart>
     </ChartWrapper>
   )
 })
 
-// ===== COMPOSANT PRINCIPAL =====
+const LoadingContent = () => (
+  <div className={loadingStyle}>
+    <div style={{ textAlign: 'center' }}>
+      <div
+        style={{
+          fontSize: '1rem',
+          marginBottom: '0.5rem',
+          color: '#4A5568'
+        }}
+      >
+        •••
+      </div>
+      <div>Loading data...</div>
+    </div>
+  </div>
+)
+
+const ErrorContent = () => (
+  <div className={loadingStyle}>
+    <div style={{ textAlign: 'center' }}>
+      <div
+        style={{
+          fontSize: '1rem',
+          marginBottom: '0.5rem',
+          color: '#E53E3E'
+        }}
+      >
+        ×
+      </div>
+      <div>Error loading data</div>
+    </div>
+  </div>
+)
+
+const NoListSelected = () => (
+  <div className={loadingStyle}>
+    <div style={{ textAlign: 'center' }}>
+      <div
+        style={{
+          fontSize: '1rem',
+          marginBottom: '0.5rem',
+          color: '#4A5568'
+        }}
+      >
+        ···
+      </div>
+      <div>Select a list to view charts</div>
+    </div>
+  </div>
+)
+
 export default function Chart () {
-  const { data, isLoading, error } = useSession()
+  const { isLoading, error } = useSession()
   const { currentList } = useStore()
 
   if (isLoading) {
     return (
-      <div className={DashboardBackgroundCSS}>
-        <Header />
-        <div className={loadingStyle}>
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: '1rem',
-                marginBottom: '0.5rem',
-                color: '#4A5568'
-              }}
-            >
-              •••
-            </div>
-            <div>Chargement des données...</div>
-          </div>
-        </div>
-      </div>
+      <Scene>
+        <LoadingContent />
+      </Scene>
     )
   }
 
   if (error) {
     return (
-      <div className={DashboardBackgroundCSS}>
-        <Header />
-        <div className={loadingStyle}>
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: '1rem',
-                marginBottom: '0.5rem',
-                color: '#E53E3E'
-              }}
-            >
-              ×
-            </div>
-            <div>Erreur lors du chargement des données</div>
-          </div>
-        </div>
-      </div>
+      <Scene>
+        <ErrorContent />
+      </Scene>
     )
   }
 
   if (!currentList) {
     return (
-      <div className={DashboardBackgroundCSS}>
-        <Header />
-        <div style={{ display: 'flex' }}>
-          <NavigationPanel />
-          <div className={DashboardCentralCSS}>
-            <div className={headerSectionStyle}>
-              <ListsGallery />
-              <PanelInfos />
-            </div>
-            <div className={loadingStyle}>
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    fontSize: '1rem',
-                    marginBottom: '0.5rem',
-                    color: '#4A5568'
-                  }}
-                >
-                  ···
-                </div>
-                <div>Sélectionnez une liste pour voir les graphiques</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Scene>
+        <NoListSelected />
+      </Scene>
     )
   }
 
   return (
-    <div className={DashboardBackgroundCSS}>
-      <Header />
-      <div style={{ display: 'flex' }}>
-        <NavigationPanel />
-        <div className={DashboardCentralCSS}>
-          <div className={mainContentStyle}>
-            <div className={headerSectionStyle}>
-              <PanelInfos />
-            </div>
-            <StatsDisplay />
-            <div className={chartsGridStyle}>
-              <LettersChart />
-              <SyllablesBottomChart />
-              <UniqueLettersChart />
-              <WordLengthsChart />
-              <ListsGallery />
-            </div>
-          </div>
+    <Scene>
+      <div className={mainContentStyle}>
+        <StatsDisplay />
+        <div className={chartsGridStyle}>
+          <LettersChart />
+          <SyllablesBottomChart />
+          <UniqueLettersChart />
+          <WordLengthsChart />
+          <ListsGallery />
         </div>
       </div>
-    </div>
+    </Scene>
   )
 }

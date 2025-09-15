@@ -1,6 +1,6 @@
-import { highlightedSyllableCSS } from '@shared/generic/generic.style'
+import { SyllableHighlight } from '../components/syllable-hightlight/syllable-hightlight'
 
-export const highlightSyllable = (word: string, syllable: string) => {
+export const highlightSyllable = (word: string, syllable: string, color:string) => {
   if (!syllable) return word
 
   const regex = new RegExp(`(${syllable})`, 'gi')
@@ -8,9 +8,7 @@ export const highlightSyllable = (word: string, syllable: string) => {
 
   return parts.map((part, index) =>
     regex.test(part) ? (
-      <span key={index} className={highlightedSyllableCSS}>
-        {part}
-      </span>
+     <SyllableHighlight children={part} color={color} key={index}/>
     ) : (
       part
     )

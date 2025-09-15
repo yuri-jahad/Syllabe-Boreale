@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { css } from '~styled-system/css'
 import { BookOpen } from 'lucide-react'
-import book from '@assets/images/book.jpg'
+import book from '@/assets/images/book.webp'
 
 interface PropsText {
   text: string
 }
 
 const containerCSS = css({
-  height: '100vh',
+  minHeight: '84vh',
   padding: '2rem 3rem',
   display: 'flex',
   flexDirection: 'column',
@@ -17,7 +17,7 @@ const containerCSS = css({
   maxWidth: '1200px',
   margin: '0 auto',
   position: 'relative',
-  overflow: 'hidden',
+  overflow: 'visible',
 
   '&::before': {
     content: '""',
@@ -32,9 +32,21 @@ const containerCSS = css({
     pointerEvents: 'none'
   },
 
+  '@media (max-width: 1300px)': {
+    height: 'fit-content',
+    padding: '1rem',
+    paddingTop: '4rem',
+    paddingBottom: '2rem',
+    justifyContent: 'flex-start',
+    maxWidth: '100%',
+    margin: '0'
+  },
+
   '@media (max-width: 768px)': {
-    padding: '1.5rem',
-    height: '100vh'
+    padding: '0.5rem',
+    paddingTop: '3rem',
+    paddingBottom: '2rem',
+    minHeight: 'fit-content'
   }
 })
 
@@ -57,16 +69,30 @@ const titleCSS = css({
     fontWeight: '100'
   },
 
-  '@keyframes blink': {
-    '0%, 50%': { opacity: 1 },
-    '51%, 100%': { opacity: 0 }
+  '@media (max-width: 1300px)': {
+    fontSize: '2.4rem',
+    marginBottom: '2rem',
+    textAlign: 'center',
+    width: '100%',
+    justifyContent: 'center'
   },
 
   '@media (max-width: 768px)': {
-    fontSize: '2.25rem',
-    marginBottom: '2.5rem',
-    minHeight: '3rem'
+    fontSize: '2rem',
+    marginBottom: '1.5rem',
+    minHeight: '2.5rem'
+  },
+
+  '@media (max-width: 480px)': {
+    fontSize: '1.8rem',
+    marginBottom: '1rem'
   }
+})
+
+const containerParagraphBasicCSS = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '20px'
 })
 
 const titleCompleteCSS = css({
@@ -79,12 +105,25 @@ const titleCompleteCSS = css({
   minHeight: '3.5rem',
   display: 'flex',
   alignItems: 'flex-start',
-  fontFamily: 'Alessa, "Inter", system-ui, sans-serif',
+  fontFamily: 'Geist, "Inter", system-ui, sans-serif',
+
+  '@media (max-width: 1300px)': {
+    fontSize: '2.1rem',
+    marginBottom: '1.5rem',
+    textAlign: 'center',
+    width: '100%',
+    justifyContent: 'center'
+  },
 
   '@media (max-width: 768px)': {
-    fontSize: '2.25rem',
-    marginBottom: '2.5rem',
-    minHeight: '3rem'
+    fontSize: '1.8rem',
+    marginBottom: '1rem',
+    minHeight: '2.5rem'
+  },
+
+  '@media (max-width: 480px)': {
+    fontSize: '1.6rem',
+    marginBottom: '0.8rem'
   }
 })
 
@@ -94,62 +133,94 @@ const contentCSS = css({
   gap: '3rem',
   alignItems: 'center',
   width: '100%',
-  animation: 'slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+  opacity: 0,
+  transform: 'translateY(20px)',
+  transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
 
-  '@keyframes slideInUp': {
-    from: {
-      opacity: 0,
-      transform: 'translateY(20px)'
-    },
-    to: {
-      opacity: 1,
-      transform: 'translateY(0)'
-    }
+  '&.visible': {
+    opacity: 1,
+    transform: 'translateY(0)'
+  },
+
+  '@media (max-width: 1300px)': {
+    gridTemplateColumns: '1fr',
+    gap: '2rem',
+    textAlign: 'center'
   },
 
   '@media (max-width: 1024px)': {
-    gridTemplateColumns: '1fr',
-    gap: '2rem'
+    gap: '1.5rem'
+  },
+
+  '@media (max-width: 768px)': {
+    gap: '1rem'
   }
 })
 
 const textSectionCSS = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '1.5rem'
+  justifyContent: 'space-between',
+  height: '100%',
+  gap: '1.5rem',
+
+  '@media (max-width: 1300px)': {
+    gap: '1rem',
+    maxWidth: '70%',
+    margin: '0 auto'
+  },
+
+  '@media (max-width: 768px)': {
+    gap: '0.8rem',
+    maxWidth: '80%'
+  }
 })
 
 const paragraphCSS = css({
-  fontSize: '1.1rem',
+  fontSize: '16px',
   color: '#D1D5DB',
   lineHeight: '1.7',
   margin: '0',
   fontFamily: '"Inter", system-ui, sans-serif',
   '&:first-child': {
-    fontSize: '1.1rem',
+    fontSize: '16px',
     letterSpacing: '0.01em'
   },
 
-  '&:last-child': {
-    padding: '2rem',
-    background: 'rgba(30, 41, 59, 0.2)',
-    borderRadius: '16px',
-    marginTop: '0.5rem',
-    fontSize: '1.125rem',
-    color: '#E2E8F0',
-    letterSpacing: '0.01em'
-  },
-
-  '@media (max-width: 768px)': {
+  '@media (max-width: 1300px)': {
     fontSize: '1rem',
+    textAlign: 'center',
+    padding: '0 1rem',
 
     '&:first-child': {
-      fontSize: '1.125rem'
+      fontSize: '1.05rem'
     },
 
     '&:last-child': {
       fontSize: '1rem',
-      padding: '1.5rem'
+      padding: '1.2rem'
+    }
+  },
+
+  '@media (max-width: 768px)': {
+    fontSize: '0.95rem',
+    lineHeight: '1.6',
+
+    '&:first-child': {
+      fontSize: '1rem'
+    },
+
+    '&:last-child': {
+      fontSize: '0.95rem',
+      padding: '1.2rem'
+    }
+  },
+
+  '@media (max-width: 480px)': {
+    fontSize: '0.9rem',
+
+    '&:last-child': {
+      padding: '1rem'
     }
   }
 })
@@ -159,7 +230,7 @@ const subtileParagraphCSS = css({
   color: 'rgba(255, 255, 255, 0.6)',
   lineHeight: '1.7',
   margin: '0',
-  fontFamily: 'alessa, "Inter", system-ui, sans-serif',
+  fontFamily: '"Inter", system-ui, sans-serif',
   fontWeight: '300',
   padding: '1.75rem',
   background: 'rgba(51, 65, 85, 0.3)',
@@ -188,16 +259,35 @@ const subtileParagraphCSS = css({
     flex: 1
   },
 
-  '@media (max-width: 768px)': {
+  '@media (max-width: 1300px)': {
     fontSize: '1rem',
     padding: '1.5rem',
-    borderRadius: '10px',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
     gap: '0.75rem',
 
     '& .paragraph-icon': {
-      width: '1.125rem',
-      height: '1.125rem'
+      width: '1.5rem',
+      height: '1.5rem',
+      marginTop: '0'
     }
+  },
+
+  '@media (max-width: 768px)': {
+    fontSize: '0.95rem',
+    padding: '1.2rem',
+    borderRadius: '10px',
+
+    '& .paragraph-icon': {
+      width: '1.3rem',
+      height: '1.3rem'
+    }
+  },
+
+  '@media (max-width: 480px)': {
+    fontSize: '0.9rem',
+    padding: '1rem'
   }
 })
 
@@ -206,8 +296,14 @@ const imageContainerCSS = css({
   justifyContent: 'center',
   alignItems: 'center',
 
-  '@media (max-width: 1024px)': {
+  height: 'auto',
+
+  '@media (max-width: 1300px)': {
     order: -1,
+    marginBottom: '1.5rem'
+  },
+
+  '@media (max-width: 768px)': {
     marginBottom: '1rem'
   }
 })
@@ -218,19 +314,20 @@ const imageCSS = css({
   height: 'auto',
   borderRadius: '8px',
   opacity: 0.8,
-  animation: 'fadeIn 1s ease-out 0.5s both',
 
-  '@keyframes fadeIn': {
-    from: {
-      opacity: 0
-    },
-    to: {
-      opacity: 0.8
-    }
+  '@media (max-width: 1300px)': {
+    maxWidth: '220px',
+    height: 'auto'
   },
 
   '@media (max-width: 768px)': {
-    maxWidth: '260px'
+    maxWidth: '180px',
+    height: 'auto'
+  },
+
+  '@media (max-width: 480px)': {
+    maxWidth: '150px',
+    height: 'auto'
   }
 })
 
@@ -240,15 +337,20 @@ const Typewriter: React.FC<PropsText> = ({ text }) => {
   const introText = text
 
   useEffect(() => {
+    const img = new Image()
+    img.src = book
+  }, [])
+
+  useEffect(() => {
     if (charIndex < introText.length) {
       const timer = setTimeout(() => {
         setCharIndex(charIndex + 1)
-      }, 45) // Vitesse légèrement plus rapide
+      }, 20)
       return () => clearTimeout(timer)
     } else {
       const showTimer = setTimeout(() => {
         setShowParagraphs(true)
-      }, 600) // Délai légèrement plus long pour l'effet
+      }, 100)
       return () => clearTimeout(showTimer)
     }
   }, [charIndex, introText.length])
@@ -259,43 +361,50 @@ const Typewriter: React.FC<PropsText> = ({ text }) => {
         {introText.slice(0, charIndex)}
       </h1>
 
-      {showParagraphs && (
-        <div className={contentCSS}>
-          <div className={textSectionCSS}>
+      <div className={`${contentCSS} ${showParagraphs ? 'visible' : ''}`}>
+        <div className={textSectionCSS}>
+          <div className={containerParagraphBasicCSS}>
             <p className={paragraphCSS}>
-              L'idée initiale était simple : créer une plateforme pour
-              collaborer autour du dictionnaire français. L'application que vous
-              voyez aujourd'hui découle de cette pensée.
+              The idea was simple: create a space to collaborate around the
+              French dictionary. The application you see today grew out of that
+              concept.
             </p>
             <p className={paragraphCSS}>
-              Les listes présentes sur cette plateforme sont conçues pour être
-              informatives. Si vous êtes en charge de la gestion, des outils
-              sont disponibles pour faciliter vos tâches.
+              Here, everything revolves around words – explore rare syllables,
+              browse words and their definitions, and discover the richness of
+              the French language through interactive lists.
             </p>
             <p className={paragraphCSS}>
-              La plateforme est construite avec des outils tels que Node.js et
-              React, afin de garantir sa fonctionnalité et sa pérennité.
+              The platform is built with modern web technologies to ensure both
+              reliability and sustainability.
             </p>
-
-            <p className={subtileParagraphCSS}>
-              <BookOpen className='paragraph-icon' />
-              <span className='text'>
-                Que vous soyez ici pour gérer, contribuer ou simplement
-                explorer, nous espérons que cette application répondra à vos
-                besoins. Nous vous souhaitons une agréable navigation.
-              </span>
+            <p className={paragraphCSS}>
+              These lists are designed to be both useful and educational, making
+              the exploration of words an engaging and enriching experience.
             </p>
           </div>
 
-          <div className={imageContainerCSS}>
-            <img
-              src={book}
-              alt='Dictionnaire collaboratif français'
-              className={imageCSS}
-            />
-          </div>
+          <p className={subtileParagraphCSS}>
+            <BookOpen className='paragraph-icon' />
+            <span className='text'>
+              Whether you’re here to manage content, contribute, or simply
+              explore, we hope this application meets your needs. Enjoy your
+              exploration and happy browsing!
+            </span>
+          </p>
         </div>
-      )}
+
+        <div className={imageContainerCSS}>
+          <img
+            src={book}
+            alt='Collaborative French Dictionary'
+            width='300'
+            height='400'
+            className={imageCSS}
+            loading='lazy'
+          />
+        </div>
+      </div>
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { css } from '~styled-system/css'
 // 🌌 Container principal épuré
 export const tableContainerStyle = css({
   width: 'min(94%, 1400px)',
-  height:'60vh',
+  height:'50vh',
   display: 'flex',
   flexDirection: 'column',
   background: 'rgba(15, 23, 42, 0.8)',
@@ -76,7 +76,7 @@ export const ContainerInputCSS = css({
 export const cellStyle = css({
   padding: '10px 16px',
   color: '#f1f5f9',
-  fontSize: '13px',
+  fontSize: '16px',
   verticalAlign: 'middle',
   backgroundColor: 'transparent',
   borderBottom: '1px solid rgba(148, 163, 184, 0.05)'
@@ -113,7 +113,8 @@ export const usernameStyle = css({
 // 🔤 Mot en évidence
 export const wordStyle = css({
   color: '#ffffff',
-  fontSize: '16px',
+  fontSize: '13px',
+  textTransform:"uppercase",
   fontFamily:'amazon'
 })
 
@@ -324,13 +325,5 @@ export const updateStyle = css({
   '&:hover': {
     background: 'rgba(30, 41, 59, 0.8)',
     borderColor: 'rgba(148, 163, 184, 0.3)'
-  }
-})
-
-// 🎭 Animations
-export const globalAnimations = css({
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
   }
 })

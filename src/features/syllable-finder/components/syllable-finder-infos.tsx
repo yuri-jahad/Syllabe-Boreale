@@ -1,27 +1,87 @@
 import SearchInput from '@features/shared/components/input-search/input-search'
-import { WordInfosCSS } from '@features/syllable-finder/components/syllable-finder.style'
 import ListsGallery from '@shared/components/lists-gallery/lists-gallery'
-import PanelInfos from '@shared/components/panel-infos/panel-infos'
-import { useEffect } from 'react'
+import { useEffect, useState, Suspense, lazy, useRef } from 'react'
 import { useSyllablesSection, useNavigation } from '@/store/store'
 import type { ChangeEvent } from 'react'
 import { useFindSyllables } from '../hooks/syllable-finder.hooks'
 import HeaderSpecs from '@shared/components/header/header-specs'
-import SyllablesInfosBody from './syllable-finder-central'
 import { useAuth } from '@auth/hooks/auth.hooks'
+import { useDebouncedEffect } from '@shared/hooks/shared-use-debounced-effect'
+import { SearchContainerCSS } from '@shared/generic/generic.style'
+import { useQueryClient } from '@tanstack/react-query'
+
+const SyllablesInfosBody = lazy(() => import('./syllable-finder-central'))
+
+const PageSkeleton = () => (
+  <div>
+    <div className={SearchContainerCSS}>
+      <div
+        style={{
+          padding: '20px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          opacity: 0.7
+        }}
+      >
+        Loading...
+      </div>
+      <div
+        style={{
+          height: '40px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          opacity: 0.5
+        }}
+      />
+      <div
+        style={{
+          height: '300px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '8px',
+          opacity: 0.3
+        }}
+      />
+    </div>
+  </div>
+)
 
 export default function SyllablesInfos () {
+  const [isReady, setIsReady] = useState(false)
+  const queryClient = useQueryClient()
+  const lastSearchRef = useRef<string>('')
+
   const { syllablesList, setSyllablesList, clearSyllablesCache } =
     useSyllablesSection()
-
   const { currentList, currentPatternSyllable, setCurrentPatternSyllable } =
     useNavigation()
   const { user } = useAuth()
-
   const findSyllables = useFindSyllables()
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsReady(true), 16)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useDebouncedEffect(() => {
     if (currentPatternSyllable && currentList && !findSyllables.isPending) {
+      const searchKey = `${currentPatternSyllable}-${currentList}`
+
+      if (lastSearchRef.current === searchKey) {
+        return
+      }
+
+      const cacheKey = ['findSyllables', currentPatternSyllable, currentList]
+      const cachedData = queryClient.getQueryData(cacheKey)
+
+      if (cachedData) {
+        //@ts-ignore
+        setSyllablesList(cachedData)
+        return
+      }
+
+      lastSearchRef.current = searchKey
       findSyllables.mutate({
         searchParams: {
           pattern: currentPatternSyllable,
@@ -37,26 +97,37 @@ export default function SyllablesInfos () {
     }
   }, [findSyllables.isSuccess, findSyllables.data, setSyllablesList])
 
+  useEffect(() => {
+    return () => {
+      lastSearchRef.current = ''
+    }
+  }, [currentPatternSyllable, currentList])
+
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCurrentPatternSyllable(value)
-
     if (value.length === 0) {
       clearSyllablesCache()
+      lastSearchRef.current = ''
     }
   }
 
+  if (!isReady) {
+    return <PageSkeleton />
+  }
+
   return (
-    <div style={{ width: '90vw', height: '88vh' }}>
-      <div className={WordInfosCSS}>
+    <div>
+      <div className={SearchContainerCSS}>
         <HeaderSpecs
           total={syllablesList?.total || 0}
           spliced={syllablesList?.data?.length || 0}
           username={user?.username || ''}
         />
+
         <SearchInput
           handleOnChange={handleOnChange}
-          placeholder='Rechercher des syllabes...'
+          placeholder='Search for syllables...'
         />
 
         {findSyllables.isError && (
@@ -67,7 +138,7 @@ export default function SyllablesInfos () {
               textAlign: 'center'
             }}
           >
-            ❌ Erreur: {findSyllables.error?.message}
+            ❌ Error: {findSyllables.error?.message}
           </div>
         )}
 
@@ -79,14 +150,36 @@ export default function SyllablesInfos () {
               textAlign: 'center'
             }}
           >
-            ⚠️ Sélectionnez une liste pour commencer
+            ⚠️ Select a list to get started
           </div>
         )}
 
-        <SyllablesInfosBody />
-        <ListsGallery />
+        <Suspense
+          fallback={
+            <div
+              style={{
+                height: '300px',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0.7
+              }}
+            >
+              Loading content...
+            </div>
+          }
+        >
+          <SyllablesInfosBody />
+        </Suspense>
+
+        <Suspense
+          fallback={<div style={{ height: '100px', opacity: 0.5 }}>...</div>}
+        >
+          <ListsGallery />
+        </Suspense>
       </div>
-      <PanelInfos />
     </div>
   )
 }

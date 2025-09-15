@@ -1,16 +1,19 @@
-import { css } from "~styled-system/css";
+import { css } from '~styled-system/css'
 
 export const DashboardCentralCSS = css({
-  display: "flex",
-  height:"88vh",
-  width: "90vw",
-  flexDirection: "column",
-  boxSizing: "border-box",
-});
-
+  display: 'flex',
+  height: '94vh',
+  width: '90vw',
+  flexDirection: 'column',
+  boxSizing: 'border-box',
+  '@media(max-width:1300px)': {
+    width: '100vw',
+    height: 'fit-content'
+  }
+})
 
 export const githubStyleBg = {
-  backgroundColor: "#0d1117",
+  backgroundColor: '#0d1117',
   backgroundImage: `
   radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
   radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.03) 0%, transparent 50%)
@@ -18,14 +21,14 @@ export const githubStyleBg = {
 }
 
 export const stripeStyleBg = {
-  backgroundColor: "#0a0e1a",
+  backgroundColor: '#0a0e1a',
   backgroundImage: `
   linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
   radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.02) 0%, transparent 70%)
   `
 }
 export const tailwindStyleBg = {
-  backgroundColor: "#111827",
+  backgroundColor: '#111827',
   backgroundImage: `
   radial-gradient(circle at 75% 25%, rgba(55, 65, 81, 0.4) 0%, transparent 50%),
   radial-gradient(circle at 25% 75%, rgba(17, 24, 39, 0.8) 0%, transparent 50%)
@@ -33,11 +36,23 @@ export const tailwindStyleBg = {
 }
 
 export const DashboardBackgroundCSS = css({
-  position: "relative",
-  fontFamily: "JBM-semibold",
-  color: "rgba(255, 255, 255, 0.85)",
-  ...tailwindStyleBg
-});
+  position: 'relative',
+  fontFamily: 'JBM-semibold',
+  color: 'rgba(255, 255, 255, 0.85)',
+  overflow: 'auto !important',
+  boxSizing: 'border-box',
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  ...githubStyleBg
+})
+
+export const SearchContainerCSS = css({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-evenly',
+  boxSizing: 'border-box'
+})
 
 export const definitionTextCSS = css({
   color: '#f1f5f9',
@@ -48,26 +63,15 @@ export const definitionTextCSS = css({
   fontFamily:
     'amazon, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 
-  // Amélioration de la lisibilité
   textRendering: 'optimizeLegibility',
-  WebkitFontSmoothing: 'antialiased',
-  MozOsxFontSmoothing: 'grayscale',
-
-  // Espacement des mots amélioré
   wordSpacing: '0.05em',
-
-  // Gestion des retours à la ligne
   wordBreak: 'break-word',
   hyphens: 'auto',
 
   // Espacement vertical pour aérer les longs textes
   marginBottom: '8px',
-
-  // Hauteur max avec scroll pour éviter les textes trop longs
   maxHeight: '150px',
   overflowY: 'auto',
-
-  // Scrollbar custom
   '&::-webkit-scrollbar': {
     width: '4px'
   },
@@ -76,7 +80,6 @@ export const definitionTextCSS = css({
     borderRadius: '2px'
   }
 })
-
 
 export const compactMetaCSS = css({
   padding: '12px 18px',
@@ -158,3 +161,11 @@ export const highlightedSyllableCSS = css({
   margin: '0 -1px',
   textTransform: 'uppercase'
 })
+
+export const toastErrorCSS = {
+  background: '#d32f2f',
+  color: 'white',
+  padding: '8px 24px',
+  fontSize: '14px',
+  fontWeight: '500'
+}

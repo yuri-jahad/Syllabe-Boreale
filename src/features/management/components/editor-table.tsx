@@ -1,15 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useMemo, useCallback, memo } from 'react'
 import {
   useModalIsOpen,
   useEditRowSelected,
   useOpenModal,
-  useCloseModal
+  useCloseModal,
+  useStore
 } from '@/store/store'
 import {
   tableContainerStyle,
   tableStyle,
   headerStyle,
-  rowStyle,
   cellStyle,
   avatarStyle,
   userContainerStyle,
@@ -21,26 +22,23 @@ import {
   loadingStyle,
   emptyStyle,
   metadataStyle,
-  typesContainerStyle,
-  globalAnimations
+  typesContainerStyle
 } from './editor-table.style'
 import getTags from '../helper/get-tags'
 import EditorModalUpdate from './editor-modal-update'
 import { WordFindResponse } from '../types/editor.types'
 import { css } from '~styled-system/css'
 import Modal from '@shared/components/modal/modal'
+import { highlightSyllable } from '@shared/services/hightlight-syllable.service'
 
-// 🎯 Row avec hover subtil
 const enhancedRowStyle = css({
   transition: 'background-color 0.2s ease',
   cursor: 'pointer',
-
   '&:hover': {
     backgroundColor: 'rgba(30, 41, 59, 0.3)'
   }
 })
 
-// 🎨 Bouton modifier élégant
 const cleanUpdateButtonStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
@@ -54,18 +52,15 @@ const cleanUpdateButtonStyle = css({
   fontWeight: '500',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-
   '&:hover': {
     background: 'rgba(59, 130, 246, 0.2)',
     color: '#ffffff'
   },
-
   '&:active': {
     transform: 'scale(0.98)'
   }
 })
 
-// 🎯 Styles pour info utilisateur
 const userInfoStyle = css({
   display: 'flex',
   flexDirection: 'column',
@@ -92,17 +87,20 @@ const timeAgoStyle = css({
   fontStyle: 'italic'
 })
 
-// 🎨 Couleurs pour les rôles
 const getRoleColor = (role: string) => {
   const colors = {
-    Administrator: '#ff3b82', // Rose néon
-    Moderator: '#00d9ff' // Cyan lumineux
+    Administrator: '#ff3b82',
+    Moderator: '#00d9ff'
   }
   return colors[role as keyof typeof colors] || '#64748b'
 }
 
-// ⏰ Calcul du temps
+const timeCache = new Map()
 const getTimeAgo = (dateString: string) => {
+  if (timeCache.has(dateString)) {
+    return timeCache.get(dateString)
+  }
+
   try {
     const date = new Date(dateString)
     const now = new Date()
@@ -111,50 +109,186 @@ const getTimeAgo = (dateString: string) => {
     const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffMinutes < 60) return `${diffMinutes}min`
-    if (diffHours < 24) return `${diffHours}h`
-    if (diffDays === 1) return "aujourd'hui"
-    if (diffDays === 2) return 'hier'
-    if (diffDays <= 7) return `${diffDays}j`
-    if (diffDays <= 30) return `${Math.ceil(diffDays / 7)}sem`
-    return `${Math.ceil(diffDays / 30)}mois`
+    let result = ''
+    if (diffMinutes < 60) result = `${diffMinutes}min`
+    else if (diffHours < 24) result = `${diffHours}h`
+    else if (diffDays === 1) result = 'today'
+    else if (diffDays === 2) result = 'yesterday'
+    else if (diffDays <= 7) result = `${diffDays}d`
+    else if (diffDays <= 30) result = `${Math.ceil(diffDays / 7)}w`
+    else result = `${Math.ceil(diffDays / 30)}mo`
+
+    timeCache.set(dateString, result)
+    return result
   } catch {
     return ''
   }
 }
 
-const renderTypeBadges = (row: any) => {
-  const types = getTags(row)
-  return types.map((type, index) => {
-    const colorConfig = getBadgeColor(type)
-    return (
-      <span
-        key={`${type}-${index}`}
-        className={badgeStyle}
-        style={{
-          background: colorConfig.bg,
-          borderColor: colorConfig.border,
-          color: colorConfig.color
-        }}
-      >
-        {type}
-      </span>
-    )
-  })
-}
-
+const dateCache = new Map()
 const formatDate = (dateString: string) => {
+  if (dateCache.has(dateString)) {
+    return dateCache.get(dateString)
+  }
+
   try {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    const result = new Date(dateString).toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
     })
+    dateCache.set(dateString, result)
+    return result
   } catch {
     return dateString
   }
 }
+
+const UserAvatar = memo(({ row }: { row: any }) => {
+  const getFallbackUrl = useCallback(() => {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      row.username
+    )}&background=475569&color=fff&size=32`
+  }, [row.username])
+
+  const avatarUrl = useMemo(() => {
+    return row.image_path || getFallbackUrl()
+  }, [row.image_path, getFallbackUrl])
+
+  if (avatarUrl.includes('.webm')) {
+    return (
+      <video
+        src={avatarUrl}
+        className={avatarStyle}
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+    )
+  }
+
+  return (
+    <picture>
+      {avatarUrl.includes('.avif') && (
+        <source key='avif' srcSet={avatarUrl} type='image/avif' />
+      )}
+      {avatarUrl.includes('.webp') && (
+        <source key='webp' srcSet={avatarUrl} type='image/webp' />
+      )}
+      <img src={avatarUrl} alt={row.username} className={avatarStyle} />
+    </picture>
+  )
+})
+
+const TypeBadges = memo(({ row }: { row: any }) => {
+  const badges = useMemo(() => {
+    const types = getTags(row)
+    return types.map((type, index) => {
+      const colorConfig = getBadgeColor(type)
+      return (
+        <span
+          key={`badge-${row.id}-${type}-${index}`}
+          className={badgeStyle}
+          style={{
+            background: colorConfig.bg,
+            borderColor: colorConfig.border,
+            color: colorConfig.color
+          }}
+        >
+          {type}
+        </span>
+      )
+    })
+  }, [row])
+
+  return <div className={typesContainerStyle}>{badges}</div>
+})
+
+const TableRow = memo(
+  ({
+    row,
+    currentSearchTerm,
+    syllableColor,
+    onRowClick
+  }: {
+    row: any
+    currentSearchTerm: string
+    syllableColor: string
+    onRowClick: (row: any) => void
+  }) => {
+    const handleClick = useCallback(() => {
+      onRowClick(row)
+    }, [row, onRowClick])
+
+    const handleButtonClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onRowClick(row)
+      },
+      [row, onRowClick]
+    )
+
+    const formattedData = useMemo(
+      () => ({
+        timeAgo: getTimeAgo(row.created_at.toString()),
+        formattedDate: formatDate(row.created_at.toString()),
+        roleColor: getRoleColor(row.role)
+      }),
+      [row.created_at, row.role]
+    )
+
+    return (
+      <tr
+        key={`row-${row.id}`}
+        className={enhancedRowStyle}
+        onClick={handleClick}
+      >
+        <td key={`creator-${row.id}`} className={cellStyle}>
+          <div className={userContainerStyle}>
+            <UserAvatar row={row} />
+            <div className={userInfoStyle}>
+              <span className={usernameStyle}>{row.username}</span>
+              <span
+                className={roleStyle}
+                style={{ color: formattedData.roleColor }}
+              >
+                {row.role || 'User'}
+              </span>
+            </div>
+          </div>
+        </td>
+
+        <td key={`word-${row.id}`} className={cellStyle}>
+          <span className={wordStyle}>
+            {highlightSyllable(row.word, currentSearchTerm, syllableColor)}
+          </span>
+        </td>
+
+        <td key={`categories-${row.id}`} className={cellStyle}>
+          <TypeBadges row={row} />
+        </td>
+
+        <td key={`date-${row.id}`} className={cellStyle}>
+          <div className={timestampContainerStyle}>
+            <span className={dateStyle}>{formattedData.formattedDate}</span>
+            <span className={timeAgoStyle}>{formattedData.timeAgo}</span>
+          </div>
+        </td>
+
+        <td key={`actions-${row.id}`} className={cellStyle}>
+          <button
+            onClick={handleButtonClick}
+            className={cleanUpdateButtonStyle}
+          >
+            Edit
+          </button>
+        </td>
+      </tr>
+    )
+  }
+)
 
 export default function EditorTable ({ data }: any) {
   const queryClient = useQueryClient()
@@ -162,26 +296,40 @@ export default function EditorTable ({ data }: any) {
   const editRowSelected = useEditRowSelected()
   const openModal = useOpenModal()
   const closeModal = useCloseModal()
+  const { syllableColor } = useStore()
 
-  const searchResults: WordFindResponse =
-    data || queryClient.getQueryData(['editor', 'currentSearch'])
-  const currentSearchTerm =
-    queryClient.getQueryData(['editor', 'currentSearchTerm']) || ''
+  const searchResults: WordFindResponse = useMemo(
+    () => data || queryClient.getQueryData(['editor', 'currentSearch']),
+    [data, queryClient]
+  )
 
-  const handleRowClick = (row: any) => {
-    openModal(row)
-  }
+  const currentSearchTerm: string = useMemo(
+    () => queryClient.getQueryData(['editor', 'currentSearchTerm']) || '',
+    [queryClient]
+  )
 
-  const handleModalClose = () => {
+  const displayedData = useMemo(() => {
+    if (!searchResults?.data) return []
+    return searchResults.data.slice(0, 100)
+  }, [searchResults?.data])
+
+  const handleRowClick = useCallback(
+    (row: any) => {
+      openModal(row)
+    },
+    [openModal]
+  )
+
+  const handleModalClose = useCallback(() => {
     closeModal()
-  }
+  }, [closeModal])
 
   if (!searchResults) {
     return (
-      <div className={`${tableContainerStyle} ${globalAnimations}`}>
+      <div className={tableContainerStyle}>
         <div className={loadingStyle}>
           <div className='spinner'></div>
-          <div className='text'>Recherchez un mot...</div>
+          <div className='text'>Search for a word...</div>
         </div>
       </div>
     )
@@ -189,105 +337,67 @@ export default function EditorTable ({ data }: any) {
 
   if (!searchResults.data.length) {
     return (
-      <div className={`${tableContainerStyle} ${globalAnimations}`}>
+      <div className={tableContainerStyle}>
         <div className={emptyStyle}>
-          <div className='title'>Aucun résultat pour "{currentSearchTerm}"</div>
-          <div className='subtitle'>Essayez un autre terme de recherche</div>
+          <div className='title'>No results for "{currentSearchTerm}"</div>
+          <div className='subtitle'>Try another search term</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`${tableContainerStyle} ${globalAnimations}`}>
+    <div className={tableContainerStyle}>
       <table className={tableStyle}>
         <thead>
           <tr>
-            <th className={headerStyle}>Creator</th>
-            <th className={headerStyle}>Word</th>
-            <th className={headerStyle}>Categories</th>
-            <th className={headerStyle}>Date</th>
-            <th className={headerStyle}>Actions</th>
+            <th key='creator' className={headerStyle}>
+              Creator
+            </th>
+            <th key='word' className={headerStyle}>
+              Word
+            </th>
+            <th key='categories' className={headerStyle}>
+              Categories
+            </th>
+            <th key='date' className={headerStyle}>
+              Date
+            </th>
+            <th key='actions' className={headerStyle}>
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
-          {searchResults.data.map((row: any, index: number) => (
-            <tr
-              key={`${row.id}-${index}`}
-              className={enhancedRowStyle}
-              onClick={() => handleRowClick(row)}
-            >
-              <td className={cellStyle}>
-                <div className={userContainerStyle}>
-                  <img
-                    src={
-                      row.image_path ||
-                      `https://ui-avatars.com/api/?name=${row.username}&background=64748b&color=fff&size=32`
-                    }
-                    alt={row.username}
-                    className={avatarStyle}
-                  />
-                  <div className={userInfoStyle}>
-                    <span className={usernameStyle}>{row.username}</span>
-                    <span
-                      className={roleStyle}
-                      style={{ color: getRoleColor(row.role) }}
-                    >
-                      {row.role || 'Utilisateur'}
-                    </span>
-                  </div>
-                </div>
-              </td>
-
-              <td className={cellStyle}>
-                <span className={wordStyle}>{row.word}</span>
-              </td>
-
-              <td className={cellStyle}>
-                <div className={typesContainerStyle}>
-                  {renderTypeBadges(row)}
-                </div>
-              </td>
-
-              <td className={cellStyle}>
-                <div className={timestampContainerStyle}>
-                  <span className={dateStyle}>
-                    {formatDate(row.created_at.toString())}
-                  </span>
-                  <span className={timeAgoStyle}>
-                    {getTimeAgo(row.created_at.toString())}
-                  </span>
-                </div>
-              </td>
-
-              <td className={cellStyle}>
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    handleRowClick(row)
-                  }}
-                  className={cleanUpdateButtonStyle}
-                >
-                  Modifier
-                </button>
-              </td>
-            </tr>
+          {displayedData.map((row: any) => (
+            <TableRow
+              key={row.id}
+              row={row}
+              currentSearchTerm={currentSearchTerm}
+              syllableColor={syllableColor}
+              onRowClick={handleRowClick}
+            />
           ))}
         </tbody>
       </table>
 
       <div className={metadataStyle}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <span className='stat'>Affichés: {searchResults.data.length}</span>
+          <span className='stat'>Displayed: {displayedData.length}</span>
           <span className='stat'>Total: {searchResults.total}</span>
+          {searchResults.data.length > 100 && (
+            <span className='more'>
+              +{searchResults.data.length - 100} hidden for performance
+            </span>
+          )}
           {searchResults.hasMore > 0 && (
-            <span className='more'>+{searchResults.hasMore} disponibles</span>
+            <span className='more'>+{searchResults.hasMore} available</span>
           )}
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span className='query'>"{searchResults.pattern}"</span>
           <span style={{ fontSize: '10px', color: '#64748b' }}>
-            {new Date().toLocaleTimeString('fr-FR')}
+            {new Date().toLocaleTimeString('en-US')}
           </span>
         </div>
       </div>

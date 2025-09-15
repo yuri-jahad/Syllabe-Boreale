@@ -1,28 +1,39 @@
 import { css } from '~styled-system/css'
 
 export const managementModalStyle = {
-  // ✨ CONTENEUR PRINCIPAL - Design sophistiqué
   ContentContainer: css({
     color: '#e2e8f0',
-    height: '100%',
+    width: '100%',
+    maxWidth: '1200px',
+    minHeight: '600px',
+    maxHeight: '95vh',
     display: 'flex',
     flexDirection: 'column',
     gap: '1.5rem',
-    overflow: 'hidden',
-    padding:"10px",
+    padding: '24px',
     position: 'relative',
     background:
-      'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%)',
+      'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
     backdropFilter: 'blur(20px)',
-    animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+    borderRadius: '20px',
+    border: '1px solid rgba(148, 163, 184, 0.1)',
+    animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+
+    '@media (max-width: 768px)': {
+      width: '95vw',
+      maxHeight: '95vh',
+      padding: '16px',
+      gap: '1rem'
+    }
   }),
 
-  // ✨ HEADER - Élégance moderne
   Header: css({
     flexShrink: 0,
     borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
-    paddingBottom: '2rem',
+    paddingBottom: '20px',
+    minHeight: '120px',
     position: 'relative',
+
     _after: {
       content: '""',
       position: 'absolute',
@@ -34,12 +45,16 @@ export const managementModalStyle = {
       background:
         'linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent)',
       borderRadius: '1px'
+    },
+
+    '@media (max-width: 768px)': {
+      minHeight: '80px',
+      paddingBottom: '16px'
     }
   }),
 
   HeaderContent: css({
     textAlign: 'center',
-    marginBottom: '1.5rem',
     position: 'relative',
     zIndex: 1
   }),
@@ -49,24 +64,32 @@ export const managementModalStyle = {
     color: '#94a3b8',
     textTransform: 'uppercase',
     letterSpacing: '0.15em',
-    marginBottom: '0.75rem',
+    marginBottom: '8px',
     fontWeight: '500',
     opacity: 0.8,
-    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both'
+    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both',
+
+    '@media (max-width: 768px)': {
+      fontSize: '0.7rem',
+      marginBottom: '4px'
+    }
   }),
 
   HeaderTitle: css({
-    fontSize: '2.25rem',
+    fontSize: '2rem',
     fontWeight: '700',
     color: '#f8fafc',
-    marginBottom: '1.5rem',
+    marginBottom: '16px',
     letterSpacing: '-0.02em',
     background: 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)',
     backgroundClip: 'text',
-    WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    textShadow: 'none',
-    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both'
+    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both',
+
+    '@media (max-width: 768px)': {
+      fontSize: '1.5rem',
+      marginBottom: '12px'
+    }
   }),
 
   HeaderInfo: css({
@@ -74,7 +97,12 @@ export const managementModalStyle = {
     justifyContent: 'center',
     alignItems: 'center',
     gap: '1rem',
-    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both'
+    animation: 'slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both',
+
+    '@media (max-width: 768px)': {
+      gap: '0.5rem',
+      fontSize: '0.8rem'
+    }
   }),
 
   UserBadge: css({
@@ -83,28 +111,41 @@ export const managementModalStyle = {
     gap: '0.75rem',
     backgroundColor: 'rgba(30, 41, 59, 0.3)',
     backdropFilter: 'blur(12px)',
-    paddingX: '1.25rem',
-    paddingY: '0.75rem',
+    paddingX: '16px',
+    paddingY: '8px',
     borderRadius: '9999px',
     border: '1px solid rgba(148, 163, 184, 0.12)',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+
     _hover: {
-      transform: 'translateY(-1px)',
+
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
       backgroundColor: 'rgba(30, 41, 59, 0.4)',
       borderColor: 'rgba(148, 163, 184, 0.2)'
+    },
+
+    '@media (max-width: 768px)': {
+      paddingX: '12px',
+      paddingY: '6px',
+      gap: '0.5rem'
     }
   }),
 
   UserAvatar: css({
-    width: '1.75rem',
-    height: '1.75rem',
+    width: '28px',
+    height: '28px',
     borderRadius: '50%',
     border: '2px solid rgba(148, 163, 184, 0.2)',
     transition: 'all 0.3s ease',
+
     _hover: {
       borderColor: 'rgba(56, 189, 248, 0.4)',
       boxShadow: '0 0 0 2px rgba(56, 189, 248, 0.1)'
+    },
+
+    '@media (max-width: 768px)': {
+      width: '24px',
+      height: '24px'
     }
   }),
 
@@ -112,7 +153,11 @@ export const managementModalStyle = {
     color: '#e2e8f0',
     fontSize: '0.875rem',
     fontWeight: '500',
-    letterSpacing: '0.01em'
+    letterSpacing: '0.01em',
+
+    '@media (max-width: 768px)': {
+      fontSize: '0.8rem'
+    }
   }),
 
   Separator: css({
@@ -128,36 +173,43 @@ export const managementModalStyle = {
     fontSize: '0.75rem',
     fontFamily: 'ui-monospace, SFMono-Regular, monospace',
     fontWeight: '400',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
+
+    '@media (max-width: 768px)': {
+      fontSize: '0.7rem'
+    }
   }),
 
-  // ✨ CONTENU PRINCIPAL - Layout harmonieux
   MainContent: css({
     flex: 1,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '2rem',
-    overflow: 'hidden',
-    minHeight: 0
+    gap: '24px',
+    minHeight: 'auto',
+
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: '1fr',
+      gap: '16px'
+    }
   }),
 
   LeftColumn: css({
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.5rem',
-    minHeight: 0
+    gap: '20px',
+    minHeight: 'auto'
   }),
 
-  // ✨ SECTIONS - Raffinement moderne
   Section: css({
-    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     backdropFilter: 'blur(12px)',
-    padding: '1.75rem',
+    padding: '20px',
     borderRadius: '16px',
-    border: '1px solid rgba(148, 163, 184, 0.08)',
+    border: '1px solid rgba(148, 163, 184, 0.15)',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative',
-    overflow: 'hidden',
+    minHeight: '120px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
 
     _before: {
       content: '""',
@@ -165,32 +217,36 @@ export const managementModalStyle = {
       top: 0,
       left: 0,
       right: 0,
-      height: '1px',
+      height: '2px',
       background:
-        'linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent)'
+        'linear-gradient(90deg, rgba(56, 189, 248, 0.3), rgba(139, 92, 246, 0.3), rgba(56, 189, 248, 0.3))'
     },
 
     _hover: {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
-      backgroundColor: 'rgba(30, 41, 59, 0.4)',
-      borderColor: 'rgba(148, 163, 184, 0.15)'
+      boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)',
+      backgroundColor: 'rgba(30, 41, 59, 0.6)',
+      borderColor: 'rgba(148, 163, 184, 0.25)'
+    },
+
+    '@media (max-width: 768px)': {
+      padding: '16px',
+      minHeight: '100px'
     }
   }),
 
   FlexSection: css({
-    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     backdropFilter: 'blur(12px)',
-    padding: '1.75rem',
+    padding: '20px',
     borderRadius: '16px',
-    border: '1px solid rgba(148, 163, 184, 0.08)',
-    flex: 1,
+    border: '1px solid rgba(148, 163, 184, 0.15)',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     display: 'flex',
     flexDirection: 'column',
-    minHeight: 0,
+    minHeight: '160px',
+    maxHeight: '300px',
     position: 'relative',
-    overflow: 'hidden',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
 
     _before: {
       content: '""',
@@ -198,32 +254,43 @@ export const managementModalStyle = {
       top: 0,
       left: 0,
       right: 0,
-      height: '1px',
+      height: '2px',
       background:
-        'linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent)'
+        'linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.3))'
     },
 
     _hover: {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
-      backgroundColor: 'rgba(30, 41, 59, 0.4)',
-      borderColor: 'rgba(148, 163, 184, 0.15)'
+      boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)',
+      backgroundColor: 'rgba(30, 41, 59, 0.6)',
+      borderColor: 'rgba(148, 163, 184, 0.25)'
+    },
+
+    '@media (max-width: 768px)': {
+      padding: '16px',
+      minHeight: '120px',
+      maxHeight: '250px'
     }
   }),
 
   SectionHeader: css({
-    color: '#f8fafc',
+    color: '#ffffff',
     fontSize: '1.125rem',
-    fontWeight: '600',
-    marginBottom: '1.5rem',
+    fontWeight: '700',
+    marginBottom: '16px',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: '12px',
     flexShrink: 0,
-    letterSpacing: '-0.01em'
+    letterSpacing: '-0.01em',
+    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+
+    '@media (max-width: 768px)': {
+      fontSize: '1rem',
+      marginBottom: '12px',
+      gap: '8px'
+    }
   }),
 
-  // ✨ DOTS COLORÉS - Design subtil
   BlueDot: css({
     width: '10px',
     height: '10px',
@@ -232,6 +299,8 @@ export const managementModalStyle = {
     boxShadow:
       '0 0 12px rgba(14, 165, 233, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
     position: 'relative',
+    flexShrink: 0,
+
     _after: {
       content: '""',
       position: 'absolute',
@@ -253,6 +322,8 @@ export const managementModalStyle = {
     boxShadow:
       '0 0 12px rgba(16, 185, 129, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
     position: 'relative',
+    flexShrink: 0,
+
     _after: {
       content: '""',
       position: 'absolute',
@@ -274,6 +345,8 @@ export const managementModalStyle = {
     boxShadow:
       '0 0 12px rgba(139, 92, 246, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
     position: 'relative',
+    flexShrink: 0,
+
     _after: {
       content: '""',
       position: 'absolute',
@@ -287,93 +360,159 @@ export const managementModalStyle = {
     }
   }),
 
-  // ✨ FORMULAIRE - UX perfectionnée
   Label: css({
     display: 'block',
-    color: '#cbd5e1',
+    color: '#f1f5f9',
     fontSize: '0.875rem',
-    fontWeight: '500',
-    marginBottom: '1rem',
+    fontWeight: '600',
+    marginBottom: '12px',
     textTransform: 'none',
     letterSpacing: '0.01em',
-    transition: 'color 0.3s ease'
+    transition: 'color 0.3s ease',
+    textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+
+    '@media (max-width: 768px)': {
+      fontSize: '0.8rem',
+      marginBottom: '8px'
+    }
   }),
 
   Input: css({
     width: '100%',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(148, 163, 184, 0.12)',
+    border: '2px solid rgba(148, 163, 184, 0.2)',
     borderRadius: '12px',
-    paddingX: '1rem',
-    paddingY: '0.875rem',
-    color: '#f8fafc',
+    paddingX: '16px',
+    paddingY: '12px',
+    color: '#ffffff',
     fontSize: '1rem',
-    fontWeight: '400',
+    fontWeight: '500',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     outline: 'none',
     position: 'relative',
+    minHeight: '48px',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
 
     _focus: {
-      borderColor: 'rgba(56, 189, 248, 0.4)',
+      borderColor: 'rgba(56, 189, 248, 0.6)',
       boxShadow:
-        '0 0 0 3px rgba(56, 189, 248, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12)',
-      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-      transform: 'translateY(-1px)'
+        '0 0 0 4px rgba(56, 189, 248, 0.15), 0 8px 30px rgba(0, 0, 0, 0.2)',
+      backgroundColor: 'rgba(15, 23, 42, 0.9)',
     },
 
     _hover: {
-      borderColor: 'rgba(148, 163, 184, 0.2)',
-      backgroundColor: 'rgba(15, 23, 42, 0.7)'
+      borderColor: 'rgba(148, 163, 184, 0.35)',
+      backgroundColor: 'rgba(15, 23, 42, 0.85)',
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)'
     },
 
     _disabled: {
       opacity: 0.5,
       cursor: 'not-allowed'
+    },
+
+    '@media (max-width: 768px)': {
+      paddingX: '12px',
+      paddingY: '10px',
+      fontSize: '0.9rem',
+      minHeight: '44px'
     }
   }),
 
-  // ✨ TAGS - Design raffiné
   TagsContainer: css({
     display: 'flex',
     flexWrap: 'wrap',
-    gap: '0.75rem',
-    minHeight: '4rem',
-    flex: 1,
+    gap: '8px',
+    minHeight: '60px',
+    maxHeight: '200px',
     overflowY: 'auto',
-    padding: '0.5rem 0',
+    padding: '8px 0',
     scrollbarWidth: 'thin',
-    scrollbarColor: 'rgba(148, 163, 184, 0.3) transparent'
+    scrollbarColor: 'rgba(148, 163, 184, 0.4) rgba(30, 41, 59, 0.3)',
+
+    '&::-webkit-scrollbar': {
+      width: '8px'
+    },
+    '&::-webkit-scrollbar-track': {
+      background: 'rgba(30, 41, 59, 0.3)',
+      borderRadius: '4px'
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background:
+        'linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(100, 116, 139, 0.4))',
+      borderRadius: '4px',
+      border: '1px solid rgba(148, 163, 184, 0.2)',
+
+      '&:hover': {
+        background:
+          'linear-gradient(180deg, rgba(148, 163, 184, 0.8), rgba(100, 116, 139, 0.6))'
+      }
+    },
+    '&::-webkit-scrollbar-corner': {
+      background: 'rgba(30, 41, 59, 0.3)'
+    }
   }),
 
   TagsGrid: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: '0.75rem',
-    maxHeight: '20rem',
+    gap: '8px',
+    maxHeight: '250px',
     overflowY: 'auto',
-    paddingRight: '0.5rem',
+    paddingRight: '8px',
     scrollbarWidth: 'thin',
-    scrollbarColor: 'rgba(148, 163, 184, 0.3) transparent'
+    scrollbarColor: 'rgba(148, 163, 184, 0.4) rgba(30, 41, 59, 0.3)',
+
+    '&::-webkit-scrollbar': {
+      width: '8px'
+    },
+    '&::-webkit-scrollbar-track': {
+      background: 'rgba(30, 41, 59, 0.3)',
+      borderRadius: '4px'
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background:
+        'linear-gradient(180deg, rgba(148, 163, 184, 0.6), rgba(100, 116, 139, 0.4))',
+      borderRadius: '4px',
+      border: '1px solid rgba(148, 163, 184, 0.2)',
+
+      '&:hover': {
+        background:
+          'linear-gradient(180deg, rgba(148, 163, 184, 0.8), rgba(100, 116, 139, 0.6))'
+      }
+    },
+    '&::-webkit-scrollbar-corner': {
+      background: 'rgba(30, 41, 59, 0.3)'
+    },
+
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+      gap: '6px',
+      maxHeight: '200px'
+    }
   }),
 
   CurrentTag: css({
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
-    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    gap: '8px',
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(56, 189, 248, 0.2)',
-    paddingX: '0.875rem',
-    paddingY: '0.5rem',
+    border: '2px solid rgba(56, 189, 248, 0.3)',
+    paddingX: '12px',
+    paddingY: '6px',
     borderRadius: '10px',
     fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#bfdbfe',
+    fontWeight: '600',
+    color: '#ffffff',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative',
     overflow: 'hidden',
+    minHeight: '32px',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 2px 8px rgba(56, 189, 248, 0.2)',
 
     _before: {
       content: '""',
@@ -388,15 +527,21 @@ export const managementModalStyle = {
     },
 
     _hover: {
-      backgroundColor: 'rgba(239, 68, 68, 0.08)',
-      borderColor: 'rgba(239, 68, 68, 0.3)',
-      color: '#fecaca',
-      transform: 'translateY(-1px)',
-      boxShadow: '0 4px 16px rgba(239, 68, 68, 0.15)',
+      backgroundColor: 'rgba(239, 68, 68, 0.15)',
+      borderColor: 'rgba(239, 68, 68, 0.4)',
+      color: '#ffffff',
+      boxShadow: '0 6px 20px rgba(239, 68, 68, 0.25)',
 
       _before: {
         left: '100%'
       }
+    },
+
+    '@media (max-width: 768px)': {
+      paddingX: '10px',
+      paddingY: '5px',
+      fontSize: '0.8rem',
+      gap: '6px'
     }
   }),
 
@@ -420,6 +565,8 @@ export const managementModalStyle = {
     fontSize: '0.75rem',
     opacity: 0.7,
     transition: 'all 0.2s ease',
+    flexShrink: 0,
+
     _hover: {
       opacity: 1,
       transform: 'scale(1.1)'
@@ -430,9 +577,9 @@ export const managementModalStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '0.5rem',
-    paddingX: '1rem',
-    paddingY: '0.75rem',
+    gap: '6px',
+    paddingX: '12px',
+    paddingY: '8px',
     borderRadius: '10px',
     fontSize: '0.875rem',
     fontWeight: '500',
@@ -441,6 +588,8 @@ export const managementModalStyle = {
     border: '1px solid transparent',
     position: 'relative',
     overflow: 'hidden',
+    minHeight: '36px',
+    textAlign: 'center',
 
     _before: {
       content: '""',
@@ -455,7 +604,6 @@ export const managementModalStyle = {
     },
 
     _hover: {
-      transform: 'translateY(-2px)',
       boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
       _before: {
         left: '100%'
@@ -466,33 +614,43 @@ export const managementModalStyle = {
       opacity: 0.4,
       cursor: 'not-allowed',
       transform: 'none'
+    },
+
+    '@media (max-width: 768px)': {
+      paddingX: '10px',
+      paddingY: '6px',
+      fontSize: '0.8rem',
+      minHeight: '32px'
     }
   }),
 
   ActiveTag: css({
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(34, 197, 94, 0.2)',
-    color: '#86efac',
+    border: '2px solid rgba(34, 197, 94, 0.3)',
+    color: '#ffffff',
+    fontWeight: '600',
+    boxShadow: '0 2px 8px rgba(34, 197, 94, 0.2)',
 
     _hover: {
-      backgroundColor: 'rgba(34, 197, 94, 0.12)',
-      borderColor: 'rgba(34, 197, 94, 0.3)',
-      boxShadow: '0 8px 24px rgba(34, 197, 94, 0.12)'
+      backgroundColor: 'rgba(34, 197, 94, 0.2)',
+      borderColor: 'rgba(34, 197, 94, 0.4)',
+      boxShadow: '0 6px 20px rgba(34, 197, 94, 0.25)'
     }
   }),
 
   InactiveTag: css({
-    backgroundColor: 'rgba(51, 65, 85, 0.3)',
+    backgroundColor: 'rgba(100, 116, 139, 0.4)',
     backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(100, 116, 139, 0.15)',
-    color: '#cbd5e1',
+    border: '1px solid rgba(148, 163, 184, 0.25)',
+    color: '#e2e8f0',
+    fontWeight: '500',
 
     _hover: {
-      backgroundColor: 'rgba(56, 189, 248, 0.08)',
-      borderColor: 'rgba(56, 189, 248, 0.2)',
-      color: '#bfdbfe',
-      boxShadow: '0 8px 24px rgba(56, 189, 248, 0.12)'
+      backgroundColor: 'rgba(56, 189, 248, 0.15)',
+      borderColor: 'rgba(56, 189, 248, 0.3)',
+      color: '#ffffff',
+      boxShadow: '0 6px 20px rgba(56, 189, 248, 0.2)'
     }
   }),
 
@@ -500,15 +658,12 @@ export const managementModalStyle = {
     fontSize: '0.75rem',
     opacity: 0.8,
     transition: 'all 0.2s ease',
-    _parentHover: {
-      transform: 'scale(1.1)'
-    }
+    flexShrink: 0
   }),
 
-  // ✨ TEXTE D'AIDE - Subtil et élégant
   HelperText: css({
-    marginTop: '1.5rem',
-    paddingTop: '1rem',
+    marginTop: '16px',
+    paddingTop: '16px',
     borderTop: '1px solid rgba(148, 163, 184, 0.08)',
     flexShrink: 0,
     position: 'relative',
@@ -527,24 +682,29 @@ export const managementModalStyle = {
   }),
 
   HelperTextContent: css({
-    color: '#64748b',
+    color: '#94a3b8',
     fontSize: '0.75rem',
     textAlign: 'center',
     fontStyle: 'italic',
-    opacity: 0.8,
-    letterSpacing: '0.01em'
+    opacity: 1,
+    letterSpacing: '0.01em',
+    fontWeight: '500',
+
+    '@media (max-width: 768px)': {
+      fontSize: '0.7rem'
+    }
   }),
 
-  // ✨ FOOTER - Design harmonieux
   Footer: css({
     flexShrink: 0,
-    marginTop: '1.5rem',
-    paddingTop: '1.5rem',
+    marginTop: '20px',
+    paddingTop: '20px',
     borderTop: '1px solid rgba(148, 163, 184, 0.08)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     position: 'relative',
+    minHeight: '60px',
 
     _before: {
       content: '""',
@@ -556,16 +716,28 @@ export const managementModalStyle = {
       height: '1px',
       background:
         'linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent)'
+    },
+
+    '@media (max-width: 768px)': {
+      flexDirection: 'column',
+      gap: '12px',
+      alignItems: 'stretch',
+      minHeight: 'auto'
     }
   }),
 
   FooterInfo: css({
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
-    color: '#64748b',
+    gap: '12px',
+    color: '#94a3b8',
     fontSize: '0.875rem',
-    fontWeight: '400'
+    fontWeight: '500',
+
+    '@media (max-width: 768px)': {
+      justifyContent: 'center',
+      fontSize: '0.8rem'
+    }
   }),
 
   PulsingDot: css({
@@ -576,6 +748,7 @@ export const managementModalStyle = {
     animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
     boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
     position: 'relative',
+    flexShrink: 0,
 
     _after: {
       content: '""',
@@ -592,26 +765,32 @@ export const managementModalStyle = {
 
   ButtonGroup: css({
     display: 'flex',
-    gap: '0.75rem'
+    gap: '12px',
+
+    '@media (max-width: 768px)': {
+      width: '100%',
+      justifyContent: 'space-between'
+    }
   }),
 
-  // ✨ BOUTONS - Design premium
   BaseButton: css({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingX: '1.5rem',
-    paddingY: '0.75rem',
+    paddingX: '20px',
+    paddingY: '10px',
     borderRadius: '12px',
     fontSize: '0.875rem',
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     border: '1px solid transparent',
-    gap: '0.5rem',
+    gap: '8px',
     position: 'relative',
     overflow: 'hidden',
     letterSpacing: '0.01em',
+    minHeight: '44px',
+    whiteSpace: 'nowrap',
 
     _before: {
       content: '""',
@@ -636,6 +815,12 @@ export const managementModalStyle = {
       opacity: 0.5,
       cursor: 'not-allowed',
       transform: 'none'
+    },
+
+    '@media (max-width: 768px)': {
+      flex: 1,
+      paddingX: '16px',
+      fontSize: '0.8rem'
     }
   }),
 
@@ -668,7 +853,7 @@ export const managementModalStyle = {
   }),
 
   SaveButton: css({
-    paddingX: '2rem',
+    paddingX: '24px',
     backgroundColor: 'rgba(56, 189, 248, 0.08)',
     backdropFilter: 'blur(8px)',
     border: '1px solid rgba(56, 189, 248, 0.2)',
@@ -681,37 +866,5 @@ export const managementModalStyle = {
       color: '#dbeafe',
       boxShadow: '0 8px 24px rgba(56, 189, 248, 0.15)'
     }
-  }),
-
-  // ✨ ANIMATIONS KEYFRAMES
-  '@keyframes fadeInUp': {
-    '0%': {
-      opacity: 0,
-      transform: 'translateY(20px)'
-    },
-    '100%': {
-      opacity: 1,
-      transform: 'translateY(0)'
-    }
-  },
-
-  '@keyframes slideDown': {
-    '0%': {
-      opacity: 0,
-      transform: 'translateY(-10px)'
-    },
-    '100%': {
-      opacity: 1,
-      transform: 'translateY(0)'
-    }
-  },
-
-  '@keyframes pulse': {
-    '0%, 100%': {
-      opacity: 1
-    },
-    '50%': {
-      opacity: 0.5
-    }
-  }
+  })
 }

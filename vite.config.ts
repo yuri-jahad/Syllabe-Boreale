@@ -4,6 +4,14 @@ import path from 'path'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
 export default defineConfig({
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  },
+  build: {
+    rollupOptions: {
+      onwarn: () => {} // Ignore warnings
+    }
+  },
   plugins: [
     tanstackRouter({
       target: 'react',

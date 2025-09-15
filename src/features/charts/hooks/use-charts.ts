@@ -4,10 +4,10 @@ import { useQuery} from "@tanstack/react-query"
 
 export const useCharts = () => {
     return useQuery({
-      queryKey: ['charts'], // ✅ queryKey obligatoire
-      queryFn: () => api.api.session.early.get(), // ✅ Fonction qui retourne la promesse
+      queryKey: ['charts'], 
+      queryFn: () => api.api.session.early.get(), 
       retry: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000, 
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: true

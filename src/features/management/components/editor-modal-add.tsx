@@ -2,14 +2,19 @@ import { managementModalStyle as Style } from '@features/management/components/e
 import { ListId, useAddWordsModal } from '@/store/store'
 import { useEditorAddWords } from '../hook/use-editor'
 import { useSession } from '@/features/shared/hooks/shared-session.hook'
+import { useAuth } from '@/features/auth/hooks/auth.hooks'
+import { useCallback, useMemo } from 'react'
+import { renderAdminWarning } from '../helper/render-admin-warning'
+
+interface AddWordsModalProps {
+  close: () => void
+  createur_id: number
+}
 
 export default function AddWordsModal ({
   close,
   createur_id
-}: {
-  close: () => void
-  createur_id: number
-}) {
+}: AddWordsModalProps) {
   const {
     words,
     currentWord,
@@ -22,52 +27,226 @@ export default function AddWordsModal ({
 
   const { mutate: addWords, isPending } = useEditorAddWords()
   const { data: dataSession } = useSession()
+  const { user } = useAuth()
 
-  const availableTags = dataSession?.data.allListsDetails.listNames.slice(1)
+  const availableTags = useMemo(
+    () => dataSession?.data.allListsDetails.listNames.slice(1) || [],
+    [dataSession]
+  )
+  const totalWords = useMemo(
+    () => words.filter(w => w.name.trim()).length,
+    [words]
+  )
+  const isAdmin = user?.role === 'Administrator'
+  
+  const canEdit = isAdmin && !isPending
 
-  // Ajouter un nouveau mot à la liste
-  const handleAddWord = () => {
-    if (!currentWord.trim()) return
+  const handleAddWord = useCallback(() => {
+    if (!currentWord.trim() || !canEdit) return
     addWord(currentWord.trim().toLowerCase())
-  }
+    setCurrentWord('')
+  }, [currentWord, canEdit, addWord, setCurrentWord])
 
-  // Supprimer un mot de la liste
-  const handleRemoveWord = (index: number) => {
-    removeWord(index)
-  }
+  const handleRemoveWord = useCallback(
+    (index: number) => {
+      if (!canEdit) return
+      removeWord(index)
+    },
+    [canEdit, removeWord]
+  )
 
-  // Toggle un tag pour un mot spécifique
-  const handleToggleTag = (wordIndex: number, tag: ListId) => {
-    toggleWordTag(wordIndex, tag)
-  }
+  const handleToggleTag = useCallback(
+    (wordIndex: number, tag: ListId) => {
+      if (!canEdit) return
+      toggleWordTag(wordIndex, tag)
+    },
+    [canEdit, toggleWordTag]
+  )
 
-  // Sauvegarder tous les mots
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
+    if (!canEdit) return
+
     const validWords = words.filter(word => word.name.trim())
 
     if (!validWords.length) {
-      alert('Aucun mot valide à ajouter')
+      alert('No valid words to add')
       return
     }
 
     try {
-       addWords({
-         creator_id: createur_id,
-         words_details: validWords.map(word => ({
-           name: word.name,
-           tags: word.tags
-          }))
+      await addWords({
+        creator_id: createur_id,
+        words_details: validWords.map(word => ({
+          name: word.name,
+          tags: word.tags
+        }))
       })
 
-      clearWords() // Vider le store après succès
+      clearWords()
       close()
     } catch (error) {
-      alert("Erreur lors de l'ajout des mots")
-      console.error('❌ Erreur:', error)
+      console.error('Error:', error)
+      alert("Error adding words")
     }
-  }
+  }, [canEdit, words, addWords, createur_id, clearWords, close])
 
-  const totalWords = words.filter(w => w.name.trim()).length
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleAddWord()
+      }
+    },
+    [handleAddWord]
+  )
+
+  const handleWordSelection = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const wordIndex = parseInt(e.target.value)
+      if (!isNaN(wordIndex)) {
+        const element = document.querySelector(
+          `[data-word-index="${wordIndex}"]`
+        )
+        element?.scrollIntoView({ behavior: 'smooth' })
+      }
+    },
+    []
+  )
+
+  const handleTagClick = useCallback(
+    (tag: ListId) => {
+      if (words.length > 0 && canEdit) {
+        handleToggleTag(words.length - 1, tag)
+      }
+    },
+    [words.length, canEdit, handleToggleTag]
+  )
+
+  const renderEmptyWords = () => (
+    <div
+      style={{
+        color: '#94a3b8',
+        fontSize: '0.75rem',
+        fontStyle: 'italic',
+        padding: '0.75rem 0',
+        textAlign: 'center'
+      }}
+    >
+      No words added
+    </div>
+  )
+
+  const renderWordItem = (word: any, index: number) => (
+    <div
+      key={index}
+      data-word-index={index}
+      style={{
+        background: 'rgba(15, 20, 25, 0.5)',
+        border: '1px solid rgba(56, 189, 248, 0.2)',
+        borderRadius: '6px',
+        padding: '0.75rem',
+        opacity: !canEdit ? 0.6 : 1
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0.5rem'
+        }}
+      >
+        <span
+          style={{
+            color: '#f1f5f9',
+            fontWeight: '600',
+            fontSize: '0.85rem'
+          }}
+        >
+          {word.name || 'Empty word'}
+        </span>
+        <button
+          onClick={() => handleRemoveWord(index)}
+          disabled={!canEdit}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: canEdit ? '#ef4444' : '#64748b',
+            cursor: canEdit ? 'pointer' : 'not-allowed',
+            fontSize: '0.8rem',
+            padding: '0.125rem',
+            borderRadius: '2px'
+          }}
+          title={canEdit ? 'Delete this word' : 'Action not authorized'}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.375rem'
+        }}
+      >
+        {word.tags.map((tag: string) =>
+          tag !== 'Word' ? (
+            <div
+              key={tag}
+              className={Style.CurrentTag}
+              onClick={() => handleToggleTag(index, tag)}
+              style={{
+                cursor: canEdit ? 'pointer' : 'not-allowed',
+                opacity: canEdit ? 1 : 0.6,
+                fontSize: '0.7rem',
+                padding: '0.25rem 0.5rem'
+              }}
+              title={canEdit ? `Remove "${tag}"` : 'Action not authorized'}
+            >
+              {tag}
+              <span className={Style.TagCloseIcon}>✕</span>
+            </div>
+          ) : (
+            <div
+              key={tag}
+              className={`${Style.ImperativeTag} ${Style.AvailableTag}`}
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.25rem 0.5rem',
+                opacity: canEdit ? 1 : 0.6
+              }}
+            >
+              {tag} (required)
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  )
+
+  const renderAvailableTag = (tag: string) => (
+    <button
+      key={tag}
+      disabled={!canEdit || words.length === 0}
+      className={`${Style.AvailableTag} ${Style.InactiveTag}`}
+      style={{
+        opacity: !canEdit || words.length === 0 ? 0.4 : 1,
+        cursor: !canEdit || words.length === 0 ? 'not-allowed' : 'pointer',
+        fontSize: '0.7rem',
+        padding: '0.5rem 0.25rem'
+      }}
+      title={
+        !canEdit
+          ? 'Action not authorized'
+          : words.length === 0
+          ? "Add a word first"
+          : `Add "${tag}" to the last word`
+      }
+      onClick={() => handleTagClick(tag)}
+    >
+      {tag}
+    </button>
+  )
 
   return (
     <div>
@@ -90,7 +269,6 @@ export default function AddWordsModal ({
             gap: '0.75rem'
           }}
         >
-          {/* Header - Plus compact */}
           <div
             className={Style.Header}
             style={{
@@ -102,7 +280,7 @@ export default function AddWordsModal ({
               className={Style.HeaderContent}
               style={{ marginBottom: '0.5rem' }}
             >
-              <div className={Style.HeaderSubtitle}>Ajout de nouveaux mots</div>
+              <div className={Style.HeaderSubtitle}>Adding new words</div>
               <h2
                 className={Style.HeaderTitle}
                 style={{
@@ -110,12 +288,11 @@ export default function AddWordsModal ({
                   marginBottom: '0.5rem'
                 }}
               >
-                Créer des mots
+                Create words
               </h2>
             </div>
           </div>
 
-          {/* Main content - Avec scroll */}
           <div
             style={{
               flex: 1,
@@ -124,6 +301,8 @@ export default function AddWordsModal ({
               paddingRight: '0.5rem'
             }}
           >
+            {renderAdminWarning(isAdmin)}
+
             <div
               className={Style.MainContent}
               style={{
@@ -132,9 +311,7 @@ export default function AddWordsModal ({
                 overflow: 'visible'
               }}
             >
-              {/* Left column - Ajout de mot */}
               <div className={Style.LeftColumn} style={{ gap: '0.75rem' }}>
-                {/* Section ajout */}
                 <div className={Style.Section} style={{ padding: '1rem' }}>
                   <h3
                     className={Style.SectionHeader}
@@ -144,14 +321,14 @@ export default function AddWordsModal ({
                     }}
                   >
                     <div className={Style.BlueDot} />
-                    Ajouter un mot
+                    Add a word
                   </h3>
 
                   <label
                     className={Style.Label}
                     style={{ marginBottom: '0.5rem' }}
                   >
-                    Nouveau mot
+                    New word
                   </label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
@@ -159,18 +336,17 @@ export default function AddWordsModal ({
                       value={currentWord}
                       onChange={e => setCurrentWord(e.target.value)}
                       className={Style.Input}
-                      placeholder='Tapez un mot...'
-                      disabled={isPending}
-                      style={{ fontSize: '0.8rem' }}
-                      onKeyPress={e => {
-                        if (e.key === 'Enter') {
-                          handleAddWord()
-                        }
+                      placeholder='Type a word...'
+                      disabled={!canEdit}
+                      style={{
+                        fontSize: '0.8rem',
+                        opacity: canEdit ? 1 : 0.6
                       }}
+                      onKeyPress={handleKeyPress}
                     />
                     <button
                       onClick={handleAddWord}
-                      disabled={!currentWord.trim() || isPending}
+                      disabled={!currentWord.trim() || !canEdit}
                       className={`${Style.BaseButton} ${Style.SaveButton}`}
                       style={{
                         whiteSpace: 'nowrap',
@@ -178,12 +354,11 @@ export default function AddWordsModal ({
                         fontSize: '0.75rem'
                       }}
                     >
-                      Ajouter
+                      Add
                     </button>
                   </div>
                 </div>
 
-                {/* Liste des mots - Plus compacte */}
                 <div
                   className={Style.FlexSection}
                   style={{
@@ -200,7 +375,7 @@ export default function AddWordsModal ({
                     }}
                   >
                     <div className={Style.GreenDot} />
-                    Mots à ajouter ({totalWords})
+                    Words to add ({totalWords})
                   </h3>
 
                   <div
@@ -213,114 +388,13 @@ export default function AddWordsModal ({
                       maxHeight: '250px'
                     }}
                   >
-                    {words.length === 0 ? (
-                      <div
-                        style={{
-                          color: '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontStyle: 'italic',
-                          padding: '0.75rem 0',
-                          textAlign: 'center'
-                        }}
-                      >
-                        Aucun mot ajouté
-                      </div>
-                    ) : (
-                      words.map((word, index) => (
-                        <div
-                          key={index}
-                          data-word-index={index}
-                          style={{
-                            background: 'rgba(15, 20, 25, 0.5)',
-                            border: '1px solid rgba(56, 189, 248, 0.2)',
-                            borderRadius: '6px',
-                            padding: '0.75rem'
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              marginBottom: '0.5rem'
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: '#f1f5f9',
-                                fontWeight: '600',
-                                fontSize: '0.85rem'
-                              }}
-                            >
-                              {word.name || 'Mot vide'}
-                            </span>
-                            <button
-                              onClick={() => handleRemoveWord(index)}
-                              disabled={isPending}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#ef4444',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                padding: '0.125rem',
-                                borderRadius: '2px'
-                              }}
-                              title='Supprimer ce mot'
-                            >
-                              ✕
-                            </button>
-                          </div>
-
-                          {/* Tags pour ce mot */}
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              gap: '0.375rem'
-                            }}
-                          >
-                            {word.tags.map(tag =>
-                              tag !== 'Mot' ? (
-                                <div
-                                  key={tag}
-                                  className={Style.CurrentTag}
-                                  onClick={() => handleToggleTag(index, tag)}
-                                  style={{
-                                    cursor: isPending
-                                      ? 'not-allowed'
-                                      : 'pointer',
-                                    opacity: isPending ? 0.6 : 1,
-                                    fontSize: '0.7rem',
-                                    padding: '0.25rem 0.5rem'
-                                  }}
-                                  title={`Retirer "${tag}"`}
-                                >
-                                  {tag}
-                                  <span className={Style.TagCloseIcon}>✕</span>
-                                </div>
-                              ) : (
-                                <div
-                                  key={tag}
-                                  className={`${Style.ImperativeTag} ${Style.AvailableTag}`}
-                                  style={{
-                                    fontSize: '0.7rem',
-                                    padding: '0.25rem 0.5rem'
-                                  }}
-                                >
-                                  {tag} (impératif)
-                                </div>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
+                    {words.length === 0
+                      ? renderEmptyWords()
+                      : words.map(renderWordItem)}
                   </div>
                 </div>
               </div>
 
-              {/* Right column - Tags disponibles */}
               <div
                 className={Style.Section}
                 style={{
@@ -338,7 +412,7 @@ export default function AddWordsModal ({
                   }}
                 >
                   <div className={Style.PurpleDot} />
-                  Tags disponibles
+                  Available tags
                 </h3>
 
                 {words.length > 0 && (
@@ -350,11 +424,12 @@ export default function AddWordsModal ({
                         fontSize: '0.75rem'
                       }}
                     >
-                      Sélectionnez un mot puis cliquez sur les tags à ajouter :
+                      Select a word then click on the tags to add:
                     </div>
 
                     <div style={{ marginBottom: '0.75rem' }}>
                       <select
+                        title='tag selection'
                         style={{
                           width: '100%',
                           background: 'rgba(15, 20, 25, 0.8)',
@@ -362,22 +437,16 @@ export default function AddWordsModal ({
                           borderRadius: '6px',
                           padding: '0.5rem',
                           color: '#f1f5f9',
-                          fontSize: '0.75rem'
+                          fontSize: '0.75rem',
+                          opacity: canEdit ? 1 : 0.6
                         }}
-                        onChange={e => {
-                          const wordIndex = parseInt(e.target.value)
-                          if (!isNaN(wordIndex)) {
-                            const element = document.querySelector(
-                              `[data-word-index="${wordIndex}"]`
-                            )
-                            element?.scrollIntoView({ behavior: 'smooth' })
-                          }
-                        }}
+                        onChange={handleWordSelection}
+                        disabled={!canEdit}
                       >
-                        <option value=''>Sélectionner un mot...</option>
+                        <option value=''>Select a word...</option>
                         {words.map((word, index) => (
                           <option key={index} value={index}>
-                            {word.name || `Mot ${index + 1}`}
+                            {word.name || `Word ${index + 1}`}
                           </option>
                         ))}
                       </select>
@@ -393,34 +462,7 @@ export default function AddWordsModal ({
                     marginBottom: '0.75rem'
                   }}
                 >
-                  {availableTags.map(tag => (
-                    <button
-                      key={tag}
-                      disabled={isPending || words.length === 0}
-                      className={`${Style.AvailableTag} ${Style.InactiveTag}`}
-                      style={{
-                        opacity: isPending || words.length === 0 ? 0.4 : 1,
-                        cursor:
-                          isPending || words.length === 0
-                            ? 'not-allowed'
-                            : 'pointer',
-                        fontSize: '0.7rem',
-                        padding: '0.5rem 0.25rem'
-                      }}
-                      title={
-                        words.length === 0
-                          ? "Ajoutez d'abord un mot"
-                          : `Ajouter "${tag}" au dernier mot`
-                      }
-                      onClick={() => {
-                        if (words.length > 0) {
-                          handleToggleTag(words.length - 1, tag)
-                        }
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                  {availableTags.map(renderAvailableTag)}
                 </div>
 
                 <div
@@ -434,14 +476,13 @@ export default function AddWordsModal ({
                     className={Style.HelperTextContent}
                     style={{ fontSize: '0.65rem' }}
                   >
-                    Les tags seront ajoutés au dernier mot de la liste
+                    Tags will be added to the last word in the list
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer - Fixe en bas */}
           <div
             className={Style.Footer}
             style={{
@@ -452,13 +493,13 @@ export default function AddWordsModal ({
           >
             <div className={Style.FooterInfo} style={{ fontSize: '0.75rem' }}>
               <div className={Style.PulsingDot} />
-              {totalWords} mot{totalWords > 1 ? 's' : ''} à ajouter
+              {totalWords} word{totalWords > 1 ? 's' : ''} to add
             </div>
 
             <div className={Style.ButtonGroup} style={{ gap: '0.5rem' }}>
               <button
                 onClick={close}
-                disabled={isPending}
+                disabled={!canEdit}
                 className={`${Style.BaseButton} ${Style.CancelButton}`}
                 type='button'
                 style={{
@@ -466,12 +507,12 @@ export default function AddWordsModal ({
                   padding: '0.5rem 0.875rem'
                 }}
               >
-                Annuler
+                Cancel
               </button>
 
               <button
                 onClick={handleSave}
-                disabled={totalWords === 0 || isPending}
+                disabled={totalWords === 0 || !canEdit}
                 className={`${Style.BaseButton} ${Style.SaveButton}`}
                 type='button'
                 style={{
@@ -480,8 +521,8 @@ export default function AddWordsModal ({
                 }}
               >
                 {isPending
-                  ? 'Ajout en cours...'
-                  : `Ajouter ${totalWords} mot${totalWords > 1 ? 's' : ''}`}
+                  ? 'Adding...'
+                  : `Add ${totalWords} word${totalWords > 1 ? 's' : ''}`}
               </button>
             </div>
           </div>

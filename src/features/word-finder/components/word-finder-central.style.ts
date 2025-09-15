@@ -1,10 +1,6 @@
 import { css } from '~styled-system/css'
+import { useStore } from '../../../store/store'
 
-// ===== UX DESIGN MODERNE =====
-
-// Layout principal - DIMENSIONS ORIGINALES
-
-// Cartes - TAILLES ORIGINALES
 export const SquareCSS = css({
   padding: 0,
   borderRadius: '8px',
@@ -12,46 +8,36 @@ export const SquareCSS = css({
   background: 'rgba(15, 23, 42, 0.6)',
   border: '1px solid rgba(148, 163, 184, 0.08)',
   transition: 'all 0.3s ease',
-
+  width: '34vw',
+  height: '57vh',
   '&:hover': {
     borderColor: 'rgba(64, 194, 255, 0.2)'
   },
 
-  // DIMENSIONS ORIGINALES
-  width: '85vw',
-  height: '360px',
-  '@media (min-width: 640px)': { width: '42vw', height: '380px' },
-  '@media (min-width: 768px)': { width: '32vw', height: '420px' },
-  '@media (min-width: 1024px)': { width: '34vw', height: '500px' }
+  '@media (max-width: 800px)': {
+    width: '100%'
+  }
 })
 
 export const SquareLeftCSS = css({
-  margin: '0 12px 20px 0',
-  '@media (min-width: 640px)': { margin: '0 20px 25px 0' },
-  '@media (min-width: 768px)': { margin: '0 30px 35px 0' },
-  '@media (min-width: 1024px)': { margin: '0 40px 40px 0' }
+  margin: '0 0 16px 0',
+  '@media (min-width: 1024px)': {
+    margin: '0 40px 40px 0'
+  }
 })
 
 export const SquareRightCSS = css({
-  transform: 'translateY(2%)',
-  margin: '0 0 20px 12px',
-  '@media (min-width: 640px)': {
-    transform: 'translateY(3%)',
-    margin: '0 0 25px 20px'
-  },
-  '@media (min-width: 768px)': {
-    transform: 'translateY(5%)',
-    margin: '0 0 35px 30px'
-  },
+  // Mobile
+  transform: 'none',
+  margin: '0 0 16px 0',
   '@media (min-width: 1024px)': {
     transform: 'translateY(7%)',
     margin: '0 0 40px 40px'
   }
 })
 
-// Headers clairs et lisibles
 export const SquareTitleCSS = css({
-  padding: '16px 20px',
+  padding: '10px 20px',
   background: 'rgba(30, 41, 59, 0.6)',
   borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
   color: '#f1f5f9',
@@ -59,7 +45,12 @@ export const SquareTitleCSS = css({
   fontWeight: '600',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between'
+  justifyContent: 'space-between',
+
+  '@media (max-width: 639px)': {
+    padding: '12px 16px',
+    fontSize: '13px'
+  }
 })
 
 export const badgeCSS = css({
@@ -68,10 +59,15 @@ export const badgeCSS = css({
   background: 'rgba(59, 130, 246, 0.1)',
   padding: '2px 8px',
   borderRadius: '4px',
-  fontWeight: '500'
+  fontWeight: '500',
+
+  // Seulement mobile qui change
+  '@media (max-width: 639px)': {
+    fontSize: '11px',
+    padding: '1px 6px'
+  }
 })
 
-// Mots - lisibles et cliquables
 export const WordCSS = css({
   padding: '10px 16px',
   margin: '2px 0',
@@ -87,6 +83,13 @@ export const WordCSS = css({
     background: 'rgba(30, 41, 59, 0.5)',
     borderLeftColor: 'rgba(59, 130, 246, 0.4)',
     color: '#ffffff'
+  },
+
+  // Seulement mobile qui change
+  '@media (max-width: 639px)': {
+    padding: '8px 12px',
+    fontSize: '14px',
+    margin: '1px 0'
   }
 })
 
@@ -97,16 +100,8 @@ export const selectedWordCSS = css({
   fontWeight: 'bold'
 })
 
-export const highlightedSyllableCSS = css({
-  color: '#48cae4',
-  fontWeight: '700',
-  background: 'rgba(59, 130, 246, 0.15)',
-  padding: '1px 2px',
-  borderRadius: '2px',
-  margin: '0 -1px'
-})
 
-// Conteneurs avec scroll optimal et lisibilité
+
 export const contentAreaCSS = css({
   height: 'calc(100% - 64px)',
   overflowY: 'auto',
@@ -129,6 +124,15 @@ export const contentAreaCSS = css({
       background:
         'linear-gradient(180deg, rgba(148, 163, 184, 0.5), rgba(148, 163, 184, 0.3))'
     }
+  },
+
+  '@media (max-width: 640px)': {
+    padding: '8px 12px 6px 12px',
+    height: 'calc(100% - 56px)',
+
+    '&::-webkit-scrollbar': {
+      width: '4px'
+    }
   }
 })
 
@@ -136,7 +140,11 @@ export const cleanAreaCSS = css({
   height: 'calc(100% - 64px)',
   display: 'flex',
   flexDirection: 'column',
-  background: 'rgba(15, 23, 42, 0.2)'
+  background: 'rgba(15, 23, 42, 0.2)',
+
+  '@media (max-width: 640px)': {
+    height: 'calc(100% - 56px)'
+  }
 })
 
 export const cleanContentCSS = css({
@@ -156,6 +164,14 @@ export const cleanContentCSS = css({
       'linear-gradient(180deg, rgba(148, 163, 184, 0.3), rgba(148, 163, 184, 0.2))',
     borderRadius: '4px',
     border: '1px solid rgba(148, 163, 184, 0.1)'
+  },
+
+  '@media (max-width: 640px)': {
+    padding: '6px 12px',
+
+    '&::-webkit-scrollbar': {
+      width: '4px'
+    }
   }
 })
 
@@ -174,7 +190,13 @@ export const definitionNumberCSS = css({
   fontWeight: '700',
   flexShrink: 0,
   marginTop: '1px',
-  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.1)'
+  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.1)',
+
+  '@media (max-width: 640px)': {
+    width: '20px',
+    height: '20px',
+    fontSize: '11px'
+  }
 })
 
 export const definitionSourceCSS = css({
@@ -188,9 +210,14 @@ export const definitionSourceCSS = css({
   background: 'rgba(148, 163, 184, 0.08)',
   borderRadius: '3px',
   display: 'inline-block',
-  border: '1px solid rgba(148, 163, 184, 0.1)'
-})
+  border: '1px solid rgba(148, 163, 184, 0.1)',
 
+  '@media (max-width: 640px)': {
+    fontSize: '9px',
+    padding: '1px 4px',
+    marginBottom: '4px'
+  }
+})
 
 export const sourcesRowCSS = css({
   display: 'flex',
@@ -199,7 +226,12 @@ export const sourcesRowCSS = css({
   padding: '14px 18px',
   borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
   background: 'rgba(30, 41, 59, 0.3)',
-  justifyContent: 'center'
+  justifyContent: 'center',
+
+  '@media (max-width: 640px)': {
+    padding: '10px 12px',
+    gap: '6px'
+  }
 })
 
 export const miniChipCSS = css({
@@ -237,6 +269,16 @@ export const miniChipCSS = css({
     '&::before': {
       left: '100%'
     }
+  },
+
+  '@media (max-width: 640px)': {
+    padding: '4px 8px',
+    fontSize: '10px',
+    borderRadius: '6px',
+
+    '&:hover': {
+      transform: 'none' // Désactive l'animation sur mobile
+    }
   }
 })
 
@@ -251,6 +293,12 @@ export const miniChipActiveCSS = css({
     background:
       'linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(59, 130, 246, 0.25))',
     transform: 'translateY(-1px)'
+  },
+
+  '@media (max-width: 640px)': {
+    '&:hover': {
+      transform: 'none'
+    }
   }
 })
 
@@ -263,7 +311,12 @@ export const filterStatusCSS = css({
   fontSize: '11px',
   fontWeight: '600',
   textAlign: 'center',
-  letterSpacing: '0.5px'
+  letterSpacing: '0.5px',
+
+  '@media (max-width: 640px)': {
+    padding: '8px 12px',
+    fontSize: '10px'
+  }
 })
 
 export const emptyStateCSS = css({
@@ -276,7 +329,12 @@ export const emptyStateCSS = css({
   color: '#64748b',
   fontSize: '14px',
   textAlign: 'center',
-  lineHeight: '1.6'
+  lineHeight: '1.6',
+
+  '@media (max-width: 640px)': {
+    padding: '30px 16px',
+    fontSize: '13px'
+  }
 })
 
 export const loadingDefCSS = css({
@@ -299,9 +357,15 @@ export const loadingDefCSS = css({
     marginBottom: '12px'
   },
 
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
+  '@media (max-width: 640px)': {
+    padding: '30px 16px',
+    fontSize: '13px',
+
+    '& .spinner': {
+      width: '20px',
+      height: '20px',
+      marginBottom: '10px'
+    }
   }
 })
 
@@ -323,6 +387,17 @@ export const errorDefCSS = css({
     content: '"⚠️"',
     fontSize: '32px',
     marginBottom: '12px'
+  },
+
+  '@media (max-width: 640px)': {
+    padding: '30px 16px',
+    fontSize: '13px',
+    margin: '12px',
+
+    '&::before': {
+      fontSize: '28px',
+      marginBottom: '10px'
+    }
   }
 })
 
@@ -334,7 +409,12 @@ export const paginationContainerCSS = css({
   gap: '12px',
   padding: '12px 16px',
   background: 'rgba(30, 41, 59, 0.4)',
-  borderTop: '1px solid rgba(148, 163, 184, 0.1)'
+  borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+
+  '@media (max-width: 640px)': {
+    padding: '10px 12px',
+    gap: '8px'
+  }
 })
 
 export const paginationButtonCSS = css({
@@ -361,6 +441,13 @@ export const paginationButtonCSS = css({
   '&:disabled': {
     opacity: 0.4,
     cursor: 'not-allowed'
+  },
+
+  '@media (max-width: 640px)': {
+    width: '28px',
+    height: '28px',
+    fontSize: '11px',
+    borderRadius: '4px'
   }
 })
 
@@ -369,7 +456,12 @@ export const paginationInfoCSS = css({
   fontSize: '12px',
   fontWeight: '500',
   minWidth: '60px',
-  textAlign: 'center'
+  textAlign: 'center',
+
+  '@media (max-width: 640px)': {
+    fontSize: '11px',
+    minWidth: '50px'
+  }
 })
 
 // Bear container redesigné
@@ -377,14 +469,23 @@ export const bearContainerCSS = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  padding: '20px 0',
-
+  padding: '20px',
   '& svg': {
     filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
     transition: 'transform 0.3s ease',
 
     '&:hover': {
       transform: 'scale(1.02)'
+    }
+  },
+
+  '@media (max-width: 640px)': {
+    padding: '16px 0',
+
+    '& svg': {
+      '&:hover': {
+        transform: 'none'
+      }
     }
   }
 })
@@ -396,5 +497,26 @@ export const moreIndicatorCSS = css({
   color: '#64748b',
   background: 'rgba(30, 41, 59, 0.3)',
   borderTop: '1px solid rgba(148, 163, 184, 0.1)',
-  fontStyle: 'italic'
+  fontStyle: 'italic',
+
+  '@media (max-width: 640px)': {
+    padding: '6px 12px',
+    fontSize: '11px'
+  }
+})
+
+// Classes utilitaires pour mobile
+export const mobileSquareCSS = css({
+  '@media (max-width: 640px)': {
+    margin: '8px',
+    maxHeight: '300px',
+    overflow: 'hidden'
+  }
+})
+
+export const responsiveContainerCSS = css({
+  '@media (max-width: 640px)': {
+    padding: '8px',
+    gap: '8px'
+  }
 })

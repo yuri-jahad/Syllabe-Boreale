@@ -1,4 +1,4 @@
-import { useSyllablesSection } from '@/store/store'
+import { useNavigation, useStore, useSyllablesSection } from '@/store/store'
 import {
   threeBlocksContainerCSS,
   blockBaseCSS,
@@ -28,212 +28,143 @@ import {
   miniChipActiveCSS,
   filterStatusCSS
 } from '@features/syllable-finder/components/syllable-find-central.style'
-import { useEffect, useState, useMemo, useCallback, memo } from 'react'
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react'
 import { useWordsBySyllable } from '../hooks/syllable-finder.hooks'
 import { useDefinitionByName } from '@word-finder/hooks/find-words.hooks'
+import { highlightSyllable } from '@shared/services/hightlight-syllable.service'
 import {
   definitionCardCSS,
   definitionTextCSS
 } from '@shared/generic/generic.style'
-import { highlightSyllable } from '@shared/services/hightlight-syllable.service'
+import { useQueryClient } from '@tanstack/react-query'
 
 const DEFS_PER_PAGE = 5
 
-// ============================================================================
-// COMPOSANTS MEMOISES
-// ============================================================================
-
-const SyllableItem = memo(
-  ({
-    syllable,
-    isSelected,
-    onSelect
-  }: {
-    syllable: string
-    isSelected: boolean
-    onSelect: (syllable: string) => void
-  }) => (
-    <div
-      className={`${listItemCSS} ${isSelected ? listItemActiveCSS : ''}`}
-      onClick={() => onSelect(syllable)}
-    >
-      {syllable}
+const BlockSkeleton = memo(({ title, count = '...' }: any) => (
+  <div className={blockBaseCSS}>
+    <div className={blockHeaderCSS}>
+      <div className={blockTitleCSS}>{title}</div>
+      <div className={blockBadgeCSS}>{count}</div>
     </div>
-  )
-)
+    <div className={blockContentCSS}>
+      <div style={{ padding: '20px', opacity: 0.5 }}>Loading...</div>
+    </div>
+  </div>
+))
+
+const SyllableItem = memo(({ syllable, isSelected, onSelect, color, currentPattern}: any) => (
+  <div
+    className={`${listItemCSS} ${isSelected ? listItemActiveCSS : ''}`}
+    onClick={() => onSelect(syllable)}
+  >
+    {highlightSyllable(syllable, currentPattern, color)}
+  </div>
+))
 
 const WordItem = memo(
-  ({
-    word,
-    syllable,
-    isSelected,
-    onSelect
-  }: {
-    word: string
-    syllable: string
-    isSelected: boolean
-    onSelect: (word: string) => void
-  }) => (
+  ({ word, syllable, isSelected, onSelect, color }: any) => (
     <div
       className={`${listItemCSS} ${isSelected ? listItemActiveCSS : ''}`}
       onClick={() => onSelect(word)}
     >
-      {highlightSyllable(word, syllable)}
+      {highlightSyllable(word, syllable, color)}
     </div>
   )
 )
 
-const DefinitionItem = memo(
-  ({
-    definition,
-    index,
-    startIndex
-  }: {
-    definition: any
-    index: number
-    startIndex: number
-  }) => (
-    <div className={definitionCardCSS}>
-      <div className={definitionHeaderCSS}>
-        <div className={definitionNumberCSS}>{startIndex + index + 1}</div>
-        <div className={definitionSourceCSS}>{definition.source_name}</div>
-      </div>
-      <div className={definitionTextCSS}>{definition.definition}</div>
-    </div>
-  )
-)
+const SourceChip = memo(({ name, count, isActive, onToggle }: any) => (
+  <div
+    onClick={() => onToggle(name)}
+    className={`${miniChipCSS} ${isActive ? miniChipActiveCSS : ''}`}
+  >
+    {name} ({count})
+  </div>
+))
 
-const SourceChip = memo(
-  ({
-    name,
-    count,
-    isActive,
-    onToggle
-  }: {
-    name: string
-    count: number
-    isActive: boolean
-    onToggle: (name: string) => void
-  }) => (
-    <div
-      onClick={() => onToggle(name)}
-      className={`${miniChipCSS} ${isActive ? miniChipActiveCSS : ''}`}
-    >
-      {name} ({count})
-    </div>
-  )
-)
+const EmptyState = memo(({ icon, title, text }: any) => (
+  <div className={emptyStateCSS}>
+    <div className={emptyStateIconCSS}>{icon}</div>
+    <div className={emptyStateTitleCSS}>{title}</div>
+    <div className={emptyStateTextCSS}>{text}</div>
+  </div>
+))
 
-const EmptyState = memo(
-  ({ icon, title, text }: { icon: string; title: string; text: string }) => (
-    <div className={emptyStateCSS}>
-      <div className={emptyStateIconCSS}>{icon}</div>
-      <div className={emptyStateTitleCSS}>{title}</div>
-      <div className={emptyStateTextCSS}>{text}</div>
-    </div>
-  )
-)
-
-const LoadingState = memo(({ text }: { text: string }) => (
+const LoadingState = memo(({ text }: any) => (
   <div className={loadingStateCSS}>
     <div className={spinnerCSS}></div>
     {text}
   </div>
 ))
 
-// ============================================================================
-// HOOK PERSONNALISE POUR LA LOGIQUE DE PAGINATION
-// ============================================================================
-
-const usePagination = (items: any[], itemsPerPage: number) => {
+const usePagination = (items: any, itemsPerPage: any) => {
   const [currentPage, setCurrentPage] = useState(1)
 
-  const paginationData = useMemo(() => {
-    const totalItems = items.length
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-    return { totalItems, totalPages }
-  }, [items.length, itemsPerPage])
-
-  const currentPageItems = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return items.slice(startIndex, startIndex + itemsPerPage)
-  }, [items, currentPage, itemsPerPage])
+  const totalPages = Math.ceil((items?.length || 0) / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const currentPageItems =
+    items?.slice(startIndex, startIndex + itemsPerPage) || []
 
   const goToPage = useCallback(
-    (page: number) => {
-      setCurrentPage(Math.max(1, Math.min(page, paginationData.totalPages)))
+    (page: any) => {
+      setCurrentPage(Math.max(1, Math.min(page, totalPages)))
     },
-    [paginationData.totalPages]
+    [totalPages]
   )
 
-  const nextPage = useCallback(() => {
-    goToPage(currentPage + 1)
-  }, [currentPage, goToPage])
-
-  const prevPage = useCallback(() => {
-    goToPage(currentPage - 1)
-  }, [currentPage, goToPage])
-
-  const resetPage = useCallback(() => {
-    setCurrentPage(1)
-  }, [])
+  const nextPage = useCallback(
+    () => goToPage(currentPage + 1),
+    [currentPage, goToPage]
+  )
+  const prevPage = useCallback(
+    () => goToPage(currentPage - 1),
+    [currentPage, goToPage]
+  )
+  const resetPage = useCallback(() => setCurrentPage(1), [])
 
   return {
     currentPage,
     currentPageItems,
-    paginationData,
+    totalPages,
     nextPage,
     prevPage,
     resetPage,
-    startIndex: (currentPage - 1) * itemsPerPage
+    startIndex
   }
 }
 
-// ============================================================================
-// HOOK PERSONNALISE POUR LA LOGIQUE DES FILTRES
-// ============================================================================
+const useDefinitionFilters = (definitions = []) => {
+  const [selectedSources, setSelectedSources] = useState([])
 
-const useDefinitionFilters = (definitions: any[] = []) => {
-  const [selectedSources, setSelectedSources] = useState<string[]>([])
-
-  const { availableSources, filteredDefinitions } = useMemo(() => {
-    if (!definitions.length) {
-      return { availableSources: [], filteredDefinitions: [] }
-    }
-
-    // Calcul des sources disponibles
-    const sourcesMap = new Map<string, number>()
-    definitions.forEach(def => {
+  const availableSources = useMemo(() => {
+    if (!definitions.length) return []
+    const sourcesMap = new Map()
+    definitions.forEach((def: any) => {
       sourcesMap.set(
         def.source_name,
         (sourcesMap.get(def.source_name) || 0) + 1
       )
     })
-
-    const sources = Array.from(sourcesMap.entries())
+    return Array.from(sourcesMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
+  }, [definitions])
 
-    // Filtrage des définitions
-    const filtered =
-      selectedSources.length === 0
-        ? definitions
-        : definitions.filter(def => selectedSources.includes(def.source_name))
-
-    return { availableSources: sources, filteredDefinitions: filtered }
+  const filteredDefinitions = useMemo(() => {
+    return selectedSources.length === 0
+      ? definitions
+      : //@ts-ignore
+        definitions.filter(def => selectedSources.includes(def.source_name))
   }, [definitions, selectedSources])
 
-  const toggleSource = useCallback((sourceName: string) => {
-    setSelectedSources(prev =>
+  const toggleSource = useCallback((sourceName: any) => {
+    setSelectedSources((prev: any) =>
       prev.includes(sourceName)
-        ? prev.filter(s => s !== sourceName)
+        ? prev.filter((s: any) => s !== sourceName)
         : [...prev, sourceName]
     )
   }, [])
 
-  const resetFilters = useCallback(() => {
-    setSelectedSources([])
-  }, [])
+  const resetFilters = useCallback(() => setSelectedSources([]), [])
 
   return {
     selectedSources,
@@ -244,11 +175,11 @@ const useDefinitionFilters = (definitions: any[] = []) => {
   }
 }
 
-// ============================================================================
-// COMPOSANT PRINCIPAL
-// ============================================================================
-
 export default function SyllablesInfosBody () {
+  const [isInitialized, setIsInitialized] = useState(false)
+  const queryClient = useQueryClient()
+  const lastWordSearchRef = useRef<string>('')
+
   const {
     syllablesList,
     syllableSelected,
@@ -261,11 +192,9 @@ export default function SyllablesInfosBody () {
     setSyllableWordDefinitions
   } = useSyllablesSection()
 
-  // Hooks mutations
   const wordsBySyllableMutation = useWordsBySyllable()
   const definitionMutation = useDefinitionByName(syllableWordSelected)
 
-  // Hooks personnalisés
   const {
     selectedSources,
     availableSources,
@@ -273,32 +202,57 @@ export default function SyllablesInfosBody () {
     toggleSource,
     resetFilters
   } = useDefinitionFilters(syllableWordDefinitions?.definitions)
+  const { syllableColor } = useStore()
+  const { currentPatternSyllable } = useNavigation()
 
   const {
     currentPage,
     currentPageItems: currentPageDefs,
-    paginationData,
+    totalPages,
     nextPage,
     prevPage,
     resetPage,
     startIndex
   } = usePagination(filteredDefinitions, DEFS_PER_PAGE)
 
-  // ============================================================================
-  // EFFECTS
-  // ============================================================================
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialized(true), 16)
+    return () => clearTimeout(timer)
+  }, [])
 
-  // Chargement initial des mots si syllabe déjà sélectionnée
   useEffect(() => {
     if (syllableSelected && !syllableWordsList?.data?.length) {
+      const searchKey = `${syllableSelected}-word`
+
+      if (lastWordSearchRef.current === searchKey) {
+        return
+      }
+
+      const cacheKey = ['wordsBySyllable', syllableSelected, 'word']
+      const cachedData = queryClient.getQueryData(cacheKey)
+
+      if (cachedData) {
+        //@ts-ignore
+
+        setSyllableWordsList(cachedData)
+        console.log('📦 Words by syllable retrieved from cache')
+        return
+      }
+
+      lastWordSearchRef.current = searchKey
       wordsBySyllableMutation.mutate({
         syllable: syllableSelected,
         listname: 'word'
       })
     }
-  }, [syllableSelected])
+  }, [
+    syllableSelected,
+    syllableWordsList,
+    queryClient,
+    setSyllableWordsList,
+    wordsBySyllableMutation
+  ])
 
-  // Mise à jour des mots quand la mutation réussit
   useEffect(() => {
     if (wordsBySyllableMutation.isSuccess && wordsBySyllableMutation.data) {
       setSyllableWordsList(wordsBySyllableMutation.data)
@@ -309,7 +263,6 @@ export default function SyllablesInfosBody () {
     setSyllableWordsList
   ])
 
-  // Mise à jour des définitions quand la mutation réussit
   useEffect(() => {
     if (definitionMutation.isSuccess && definitionMutation.data) {
       setSyllableWordDefinitions(definitionMutation.data)
@@ -320,7 +273,6 @@ export default function SyllablesInfosBody () {
     setSyllableWordDefinitions
   ])
 
-  // Reset pagination et filtres quand le mot change
   useEffect(() => {
     if (syllableWordSelected) {
       resetPage()
@@ -328,27 +280,35 @@ export default function SyllablesInfosBody () {
     }
   }, [syllableWordSelected, resetPage, resetFilters])
 
-  // Reset pagination quand les filtres changent
-  useEffect(() => {
-    resetPage()
-  }, [selectedSources, resetPage])
-
-  // ============================================================================
-  // HANDLERS
-  // ============================================================================
+  useEffect(() => resetPage(), [selectedSources, resetPage])
 
   const handleSyllableSelect = useCallback(
-    (syllable: string) => {
+    (syllable: any) => {
       setSyllableSelected(syllable)
       setSyllableWordSelected('')
       setSyllableWordDefinitions(null)
       resetPage()
       resetFilters()
 
-      wordsBySyllableMutation.mutate({
-        syllable,
-        listname: 'word'
-      })
+      const searchKey = `${syllable}-word`
+
+      if (lastWordSearchRef.current === searchKey) {
+        return
+      }
+
+      const cacheKey = ['wordsBySyllable', syllable, 'word']
+      const cachedData = queryClient.getQueryData(cacheKey)
+
+      if (cachedData) {
+        //@ts-ignore
+
+        setSyllableWordsList(cachedData)
+        console.log('📦 Words by syllable retrieved from cache')
+        return
+      }
+
+      lastWordSearchRef.current = searchKey
+      wordsBySyllableMutation.mutate({ syllable, listname: 'word' })
     },
     [
       setSyllableSelected,
@@ -356,25 +316,37 @@ export default function SyllablesInfosBody () {
       setSyllableWordDefinitions,
       resetPage,
       resetFilters,
+      queryClient,
+      setSyllableWordsList,
       wordsBySyllableMutation
     ]
   )
 
   const handleWordSelect = useCallback(
-    (word: string) => {
+    (word: any) => {
       setSyllableWordSelected(word)
     },
     [setSyllableWordSelected]
   )
 
-  // ============================================================================
-  // COMPOSANTS RENDER
-  // ============================================================================
+  useEffect(() => {
+    return () => {
+      lastWordSearchRef.current = ''
+    }
+  }, [syllableSelected])
 
-  const PaginationComponent = useMemo(() => {
-    if (paginationData.totalPages <= 1) return null
-
+  if (!isInitialized) {
     return (
+      <div className={threeBlocksContainerCSS}>
+        <BlockSkeleton title='Syllables' />
+        <BlockSkeleton title='Words' />
+        <BlockSkeleton title='Definitions' />
+      </div>
+    )
+  }
+
+  const PaginationComponent =
+    totalPages > 1 ? (
       <div className={paginationContainerCSS}>
         <button
           onClick={prevPage}
@@ -384,170 +356,170 @@ export default function SyllablesInfosBody () {
           ←
         </button>
         <div className={paginationInfoCSS}>
-          {currentPage} / {paginationData.totalPages}
+          {currentPage} / {totalPages}
         </div>
         <button
           onClick={nextPage}
-          disabled={currentPage === paginationData.totalPages}
+          disabled={currentPage === totalPages}
           className={paginationButtonCSS}
         >
           →
         </button>
       </div>
-    )
-  }, [paginationData.totalPages, currentPage, prevPage, nextPage])
-
-  const renderSyllablesBlock = () => (
-    <div className={blockBaseCSS}>
-      <div className={blockHeaderCSS}>
-        <div className={blockTitleCSS}>Syllabes</div>
-        <div className={blockBadgeCSS}>{syllablesList?.data?.length || 0}</div>
-      </div>
-      <div className={blockContentCSS}>
-        {!syllablesList?.data?.length ? (
-          <EmptyState
-            icon='📝'
-            title='Aucune syllabe'
-            text='Recherchez des mots pour voir les syllabes'
-          />
-        ) : (
-          <div className={blockScrollAreaCSS}>
-            {syllablesList.data.map(syllable => (
-              <SyllableItem
-                key={syllable}
-                syllable={syllable}
-                isSelected={syllableSelected === syllable}
-                onSelect={handleSyllableSelect}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  const renderWordsBlock = () => (
-    <div className={blockBaseCSS}>
-      <div className={blockHeaderCSS}>
-        <div className={blockTitleCSS}>Mots</div>
-        <div className={blockBadgeCSS}>
-          {syllableWordsList?.data?.length || 0}
-        </div>
-      </div>
-      <div className={blockContentCSS}>
-        {!syllableSelected ? (
-          <EmptyState
-            icon='←'
-            title='Sélectionnez une syllabe'
-            text='Cliquez sur une syllabe pour voir les mots correspondants'
-          />
-        ) : wordsBySyllableMutation.isPending ? (
-          <LoadingState text='Chargement des mots...' />
-        ) : !syllableWordsList?.data?.length ? (
-          <EmptyState
-            icon='🔍'
-            title='Aucun mot trouvé'
-            text={`Aucun mot contenant la syllabe "${syllableSelected}"`}
-          />
-        ) : (
-          <div className={blockScrollAreaCSS}>
-            {syllableWordsList.data.map(word => (
-              <WordItem
-                key={word}
-                word={word}
-                syllable={syllableSelected}
-                isSelected={syllableWordSelected === word}
-                onSelect={handleWordSelect}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  const renderDefinitionsBlock = () => (
-    <div className={blockBaseCSS}>
-      <div className={blockHeaderCSS}>
-        <div className={blockTitleCSS}>Définitions</div>
-        <div className={blockBadgeCSS}>
-          {filteredDefinitions.length || 0}
-          {selectedSources.length > 0 &&
-            syllableWordDefinitions?.definitions &&
-            ` / ${syllableWordDefinitions.definitions.length}`}
-        </div>
-      </div>
-      <div className={blockContentCSS}>
-        {!syllableWordSelected ? (
-          <EmptyState
-            icon='←'
-            title='Sélectionnez un mot'
-            text='Cliquez sur un mot pour voir ses définitions'
-          />
-        ) : definitionMutation.isPending ? (
-          <LoadingState text='Chargement des définitions...' />
-        ) : !syllableWordDefinitions?.definitions?.length ? (
-          <EmptyState
-            icon='📚'
-            title='Aucune définition'
-            text={`Aucune définition trouvée pour "${syllableWordSelected}"`}
-          />
-        ) : (
-          <div className={cleanAreaCSS}>
-            {/* Filtres par sources */}
-            {availableSources.length > 1 && (
-              <div className={sourcesRowCSS}>
-                {availableSources.map(({ name, count }) => (
-                  <SourceChip
-                    key={name}
-                    name={name}
-                    count={count}
-                    isActive={selectedSources.includes(name)}
-                    onToggle={toggleSource}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Statut des filtres actifs */}
-            {selectedSources.length > 0 && (
-              <div className={filterStatusCSS}>
-                {filteredDefinitions.length} sur{' '}
-                {syllableWordDefinitions.definitions_count}
-              </div>
-            )}
-
-            {/* Contenu des définitions filtrées */}
-            {filteredDefinitions.length === 0 ? (
-              <EmptyState
-                icon='🔍'
-                title='Aucune définition'
-                text='Aucune définition pour les sources sélectionnées'
-              />
-            ) : (
-              <div className={cleanContentCSS}>
-                {currentPageDefs.map((definition, index) => (
-                  <DefinitionItem
-                    key={definition.id}
-                    definition={definition}
-                    index={index}
-                    startIndex={startIndex}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        {PaginationComponent}
-      </div>
-    </div>
-  )
+    ) : null
 
   return (
     <div className={threeBlocksContainerCSS}>
-      {renderSyllablesBlock()}
-      {renderWordsBlock()}
-      {renderDefinitionsBlock()}
+      <div className={blockBaseCSS}>
+        <div className={blockHeaderCSS}>
+          <div className={blockTitleCSS}>Syllables</div>
+          <div className={blockBadgeCSS}>
+            {syllablesList?.data?.length || 0}
+          </div>
+        </div>
+        <div className={blockContentCSS}>
+          {!syllablesList?.data?.length ? (
+            <EmptyState
+              icon='📝'
+              title='No syllables'
+              text='Search for words to see syllables'
+            />
+          ) : (
+            <div className={blockScrollAreaCSS}>
+              {syllablesList.data.map(syllable => (
+                <SyllableItem
+                  key={syllable}
+                  currentPattern={currentPatternSyllable}
+                  syllable={syllable}
+                  color={syllableColor}
+                  isSelected={syllableSelected === syllable}
+                  onSelect={handleSyllableSelect}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={blockBaseCSS}>
+        <div className={blockHeaderCSS}>
+          <div className={blockTitleCSS}>Words</div>
+          <div className={blockBadgeCSS}>
+            {syllableWordsList?.data?.length || 0}
+          </div>
+        </div>
+        <div className={blockContentCSS}>
+          {!syllableSelected ? (
+            <EmptyState
+              icon='←'
+              title='Select a syllable'
+              text='Click on a syllable to see matching words'
+            />
+          ) : wordsBySyllableMutation.isPending ? (
+            <LoadingState text='Loading words...' />
+          ) : !syllableWordsList?.data?.length ? (
+            <EmptyState
+              icon='🔍'
+              title='No words found'
+              text={`No words containing the syllable "${syllableSelected}"`}
+            />
+          ) : (
+            <div className={blockScrollAreaCSS}>
+              {syllableWordsList.data.map(word => (
+                <WordItem
+                  key={word}
+                  word={word}
+                  color={syllableColor}
+                  syllable={syllableSelected}
+                  isSelected={syllableWordSelected === word}
+                  onSelect={handleWordSelect}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={blockBaseCSS}>
+        <div className={blockHeaderCSS}>
+          <div className={blockTitleCSS}>Definitions</div>
+          <div className={blockBadgeCSS}>
+            {filteredDefinitions.length || 0}
+            {selectedSources.length > 0 &&
+              syllableWordDefinitions?.definitions &&
+              ` / ${syllableWordDefinitions.definitions.length}`}
+          </div>
+        </div>
+        <div className={blockContentCSS}>
+          {!syllableWordSelected ? (
+            <EmptyState
+              icon='←'
+              title='Select a word'
+              text='Click on a word to see its definitions'
+            />
+          ) : definitionMutation.isPending ? (
+            <LoadingState text='Loading definitions...' />
+          ) : !syllableWordDefinitions?.definitions?.length ? (
+            <EmptyState
+              icon='📚'
+              title='No definitions'
+              text={`No definitions found for "${syllableWordSelected}"`}
+            />
+          ) : (
+            <div className={cleanAreaCSS}>
+              {availableSources.length > 1 && (
+                <div className={sourcesRowCSS}>
+                  {availableSources.map(({ name, count }: any) => (
+                    <SourceChip
+                      key={name}
+                      name={name}
+                      count={count}
+                      //@ts-ignore
+
+                      isActive={selectedSources.includes(name)}
+                      onToggle={toggleSource}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {selectedSources.length > 0 && (
+                <div className={filterStatusCSS}>
+                  {filteredDefinitions.length} out of{' '}
+                  {syllableWordDefinitions.definitions_count}
+                </div>
+              )}
+
+              {filteredDefinitions.length === 0 ? (
+                <EmptyState
+                  icon='🔍'
+                  title='No definitions'
+                  text='No definitions for the selected sources'
+                />
+              ) : (
+                <div className={cleanContentCSS}>
+                  {currentPageDefs.map((definition: any, index: any) => (
+                    <div key={definition.id} className={definitionCardCSS}>
+                      <div className={definitionHeaderCSS}>
+                        <div className={definitionNumberCSS}>
+                          {startIndex + index + 1}
+                        </div>
+                        <div className={definitionSourceCSS}>
+                          {definition.source_name}
+                        </div>
+                      </div>
+                      <div className={definitionTextCSS}>
+                        {definition.definition}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {PaginationComponent}
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,5 @@
 import { css } from '~styled-system/css'
 
-// ===== DESIGN TRAIT ÉPURÉ =====
-
 export const searchContainerCSS = css({
   position: 'relative',
   display: 'flex',
@@ -68,7 +66,6 @@ export const modernInputCSS = css({
   // Autofill
   '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus': {
     WebkitTextFillColor: '#f8fafc !important',
-    WebkitBoxShadow: '0 0 0 1000px transparent inset !important'
   }
 })
 

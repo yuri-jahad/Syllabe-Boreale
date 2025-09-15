@@ -6,7 +6,11 @@ import {
   DefByNameSuccess
 } from '@backend/features/vocabulary/definitions/definitions.types'
 
+
+
 export function useFindWords () {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationKey: ['findWords'],
     mutationFn: async (data: any) => {
@@ -16,10 +20,21 @@ export function useFindWords () {
       }
       return response.data
     },
-    onSuccess: data => {},
-    onError: error => {}
+    onSuccess: async (data, variables) => {
+      const cacheKey = [
+        'findWords',
+        variables.searchParams.pattern,
+        variables.searchParams.listname
+      ]
+      queryClient.setQueryData(cacheKey, data)
+    },
+    onError: error => {
+      console.error('Search error:', error)
+    }
   })
 }
+
+
 
 export function useDefinitionByName (wordName: string) {
   return useQuery<DefByNameSuccess>({
@@ -31,7 +46,6 @@ export function useDefinitionByName (wordName: string) {
         word: wordName
       }).get()
 
-      // Votre API retourne { data: {...} }, on prend juste data
       return (response as any).data as DefByNameSuccess
     },
     enabled: !!wordName

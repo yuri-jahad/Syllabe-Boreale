@@ -6,7 +6,6 @@ import {
   contentAreaCSS,
   WordCSS,
   SquareCSS,
-  highlightedSyllableCSS,
   SquareTitleCSS,
   SquareLeftCSS,
   SquareRightCSS,
@@ -34,8 +33,10 @@ import {
 } from '@shared/generic/generic.style'
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react'
-import { useDefinitionByName, useFindWords } from '../hooks/find-words.hooks'
-import { definitionTextCSS } from '@shared/generic/generic.style'
+import { useDefinitionByName } from '../hooks/find-words.hooks'
+import { definitionTextCSS } from '@shared/generic/generic.style';
+import { SyllableHighlight } from '@/features/shared/components/syllable-hightlight/syllable-hightlight'
+import { highlightSyllable } from '@/features/shared/services/hightlight-syllable.service'
 
 const DEFS_PER_PAGE = 10
 const WordItem = memo(
@@ -50,29 +51,14 @@ const WordItem = memo(
     onSelect: (mot: string) => void
     currentPatternWord: string
   }) => {
-    const highlightSyllable = useCallback((word: string, syllable: string) => {
-      if (!syllable) return word
-
-      const regex = new RegExp(`(${syllable})`, 'gi')
-      const parts = word.split(regex)
-
-      return parts.map((part, index) =>
-        regex.test(part) ? (
-          <span key={index} className={highlightedSyllableCSS}>
-            {part}
-          </span>
-        ) : (
-          part
-        )
-      )
-    }, [])
+    const { syllableColor } = useStore()
 
     return (
       <div
         onClick={() => onSelect(mot)}
         className={`${WordCSS} ${isSelected ? selectedWordCSS : ''}`}
       >
-        {highlightSyllable(mot, currentPatternWord)}
+        {highlightSyllable(mot, currentPatternWord, syllableColor)}
       </div>
     )
   }
@@ -179,15 +165,15 @@ export default function WordInfosBody () {
   }, [filteredDefinitions, currentDefPage])
 
   const formattedTitle = useMemo(() => {
-    if (!currentPatternWord) return 'Mots disponibles'
-    if (!wordsList?.total) return `Aucun mot pour ${currentPatternWord}`
+    if (!currentPatternWord) return 'Available words'
+    if (!wordsList?.total) return `No words for ${currentPatternWord}`
 
     const { data, total } = wordsList
     const displayedCount = data?.length || 0
 
     return displayedCount === total
-      ? `${total} mot${total > 1 ? 's' : ''} avec "${currentPatternWord}"`
-      : `${displayedCount} sur ${total} mots avec "${currentPatternWord}"`
+      ? `${total} word${total > 1 ? 's' : ''} with "${currentPatternWord}"`
+      : `${displayedCount} out of ${total} words with "${currentPatternWord}"`
   }, [currentPatternWord, wordsList])
 
   useEffect(() => {
@@ -239,7 +225,7 @@ export default function WordInfosBody () {
     if (!currentPatternWord) {
       return (
         <div className={emptyStateCSS}>
-          Tapez une syllabe pour rechercher des mots
+          Type a syllable to search for words
         </div>
       )
     }
@@ -247,7 +233,7 @@ export default function WordInfosBody () {
     if (!wordsList?.data?.length) {
       return (
         <div className={emptyStateCSS}>
-          Aucun mot trouvé avec "{currentPatternWord}"
+          No words found with "{currentPatternWord}"
         </div>
       )
     }
@@ -266,7 +252,7 @@ export default function WordInfosBody () {
 
         {wordsList.hasMore > 0 && (
           <div className={moreIndicatorCSS}>
-            ... et {wordsList.total - wordsList.data.length} autres mots
+            ... and {wordsList.total - wordsList.data.length} other words
           </div>
         )}
       </div>
@@ -308,7 +294,7 @@ export default function WordInfosBody () {
     if (!wordSelected) {
       return (
         <div className={emptyStateCSS}>
-          Sélectionnez un mot pour voir ses définitions
+          Select a word to see its definitions
         </div>
       )
     }
@@ -317,21 +303,21 @@ export default function WordInfosBody () {
       return (
         <div className={loadingDefCSS}>
           <div className='spinner'></div>
-          Chargement...
+          Loading...
         </div>
       )
     }
 
     if (defError) {
       return (
-        <div className={errorDefCSS}>⚠️ {defError.message || 'Erreur'}</div>
+        <div className={errorDefCSS}>⚠️ {defError.message || 'Error'}</div>
       )
     }
 
     if (!wordDefinitions?.definitions?.length) {
       return (
         <div className={emptyStateCSS}>
-          Aucune définition pour "{wordSelected}"
+          No definitions for "{wordSelected}"
         </div>
       )
     }
@@ -339,7 +325,7 @@ export default function WordInfosBody () {
     if (filteredDefinitions.length === 0) {
       return (
         <div className={emptyStateCSS}>
-          Aucune définition pour les sources sélectionnées
+          No definitions for the selected sources
         </div>
       )
     }
@@ -350,12 +336,10 @@ export default function WordInfosBody () {
       <div className={cleanAreaCSS}>
         {wordDefinitions.word_details && (
           <div className={compactMetaCSS}>
-            {wordDefinitions.definitions_count} définition
-            {wordDefinitions.definitions_count > 1 ? 's' : ''}
+            {wordDefinitions.definitions_count} definition{wordDefinitions.definitions_count > 1 ? 's' : ''}
           </div>
         )}
 
-        {/* Filtres sources */}
         {availableSources.length > 1 && (
           <div className={sourcesRowCSS}>
             {availableSources.map(({ name, count }) => (
@@ -372,7 +356,7 @@ export default function WordInfosBody () {
 
         {selectedSources.length > 0 && (
           <div className={filterStatusCSS}>
-            {filteredDefinitions.length} sur {wordDefinitions.definitions_count}
+            {filteredDefinitions.length} out of {wordDefinitions.definitions_count}
           </div>
         )}
 
@@ -417,12 +401,12 @@ export default function WordInfosBody () {
       </div>
 
       <div className={bearContainerCSS}>
-        <BearSVG height={74} width={133} direction={bearDirection} />
+        <BearSVG height={80} width={200} direction={bearDirection} />
       </div>
 
       <div className={`${SquareCSS} ${SquareRightCSS}`}>
         <div className={SquareTitleCSS}>
-          Définitions
+          Definitions
           {wordSelected && <span className={badgeCSS}>"{wordSelected}"</span>}
         </div>
         {DefinitionsContent}

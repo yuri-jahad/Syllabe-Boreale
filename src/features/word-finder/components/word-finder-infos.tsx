@@ -1,13 +1,14 @@
 import SearchInput from '@features/shared/components/input-search/input-search'
 import WordInfosCentral from '@word-finder/components/word-finder-central'
-import { WordInfosCSS } from '@word-finder/components/word-finder.style'
 import ListsGallery from '@shared/components/lists-gallery/lists-gallery'
-import PanelInfos from '@shared/components/panel-infos/panel-infos'
-import { useEffect } from 'react'
+import { useEffect, useCallback, useMemo, memo, useRef } from 'react'
 import { useStore } from '@/store/store'
 import type { ChangeEvent } from 'react'
-import { useFindWords } from '../hooks/find-words.hooks'
-import HeaderSpecs from '@/features/shared/components/header/header-specs'
+import { useFindWords } from '@word-finder/hooks/find-words.hooks'
+import HeaderSpecs from '@shared/components/header/header-specs'
+import { useDebouncedEffect } from '@shared/hooks/shared-use-debounced-effect'
+import { SearchContainerCSS } from '@shared/generic/generic.style'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function WordInfos () {
   const {
@@ -18,71 +19,86 @@ export default function WordInfos () {
     wordsList
   } = useStore()
 
+  const queryClient = useQueryClient()
   const findWords = useFindWords()
 
-  useEffect(() => {
+  const lastSearchRef = useRef<string>('')
+
+  useDebouncedEffect(() => {
     if (currentPatternWord && currentList) {
+      const searchKey = `${currentPatternWord}-${currentList}`
+      const cacheKey = ['findWords', currentPatternWord, currentList]
+      const cachedData = queryClient.getQueryData(cacheKey)
+      if (cachedData) {
+        setWordsList(cachedData as any)
+        return
+      }
+
+      lastSearchRef.current = searchKey
       findWords.mutate({
         searchParams: {
-          pattern: currentPatternWord ,
+          pattern: currentPatternWord,
           listname: currentList
         }
       })
     }
   }, [currentPatternWord, currentList])
 
+  const updateWordsList = useCallback(
+    (data: any) => {
+      setWordsList(data)
+    },
+    [setWordsList]
+  )
+
   useEffect(() => {
     if (findWords.isSuccess && findWords.data) {
-      setWordsList(findWords.data)
+      updateWordsList(findWords.data)
     }
-  }, [findWords.isSuccess, findWords.data, setWordsList])
+  }, [findWords.isSuccess, findWords.data, updateWordsList])
 
-  const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setCurrentPatternWord(value)
-
-    if (value.length === 0) {
-      setWordsList(null)
+  useEffect(() => {
+    return () => {
+      lastSearchRef.current = ''
     }
-  }
+  }, [currentPatternWord, currentList])
+
+  const handleOnChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.trim()
+      if (value.length === 0) {
+        setCurrentPatternWord('')
+        setWordsList(null)
+        lastSearchRef.current = '' // ✅ Reset de la référence
+      } else {
+        setCurrentPatternWord(value)
+      }
+    },
+    [setCurrentPatternWord, setWordsList]
+  )
+
+  const headerStats = useMemo(
+    () => ({
+      total: wordsList?.total || 0,
+      spliced: wordsList?.data?.length || 0
+    }),
+    [wordsList]
+  )
 
   return (
-    <div style={{ width: '90vw', height: '88vh' }}>
-      <div className={WordInfosCSS}>
+    <div>
+      <div className={SearchContainerCSS}>
         <HeaderSpecs
-          total={wordsList?.total || 0}
-          spliced={wordsList?.data.length || 0}
+          total={headerStats.total}
+          spliced={headerStats.spliced}
           username='~'
         />
-        <SearchInput handleOnChange={handleOnChange} />
-        {findWords.isError && (
-          <div
-            style={{
-              color: 'rgba(255, 100, 100, 0.8)',
-              padding: '10px',
-              textAlign: 'center'
-            }}
-          >
-            ❌ Erreur: {findWords.error?.message}
-          </div>
-        )}
 
-        {!currentList && (
-          <div
-            style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              padding: '10px',
-              textAlign: 'center'
-            }}
-          >
-            ⚠️ Sélectionnez une liste pour commencer
-          </div>
-        )}
+        <SearchInput handleOnChange={handleOnChange} />
 
         <WordInfosCentral />
         <ListsGallery />
       </div>
-      <PanelInfos />
     </div>
   )
 }

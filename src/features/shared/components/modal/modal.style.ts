@@ -159,35 +159,6 @@ export const ModalCSS = css({
     }
   }
 })
-
-// 🎬 ANIMATIONS OPTIMISÉES
-export const ModalAnimations = css({
-  '@keyframes modalFadeIn': {
-    '0%': {
-      opacity: 0,
-      backdropFilter: 'blur(0px)'
-    },
-    '100%': {
-      opacity: 1,
-      backdropFilter: 'blur(8px)'
-    }
-  },
-
-  '@keyframes modalSlideIn': {
-    '0%': {
-      opacity: 0,
-      transform: 'scale(0.95) translateY(10px)',
-      filter: 'blur(2px)'
-    },
-    '100%': {
-      opacity: 1,
-      transform: 'scale(1) translateY(0)',
-      filter: 'blur(0px)'
-    }
-  }
-})
-
-// 🎯 BOUTON CLOSE COMPACT
 export const CloseButtonCSS = css({
   position: 'absolute',
   top: '1rem', // ⚡ Plus proche du bord
@@ -195,14 +166,10 @@ export const CloseButtonCSS = css({
   zIndex: 100,
   width: '2.25rem', // ⚡ Plus petit
   height: '2.25rem',
-
-  // 🎨 DESIGN SUBTIL
   background: 'rgba(30, 41, 59, 0.7)',
   backdropFilter: 'blur(8px)',
   border: '1px solid rgba(56, 189, 248, 0.2)',
   borderRadius: '8px', // ⚡ Moins arrondi
-
-  // 🎯 LAYOUT
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

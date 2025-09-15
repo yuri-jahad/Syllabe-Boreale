@@ -19,7 +19,7 @@ export default function HeaderSpecs ({
     <div className={pageHeaderStyle}>
       <div className={titleAreaStyle}>
         <div>
-          <div className={subtitleStyle}>Base de données linguistique</div>
+          <div className={subtitleStyle}>Linguistic Database</div>
         </div>
       </div>
 
@@ -29,12 +29,12 @@ export default function HeaderSpecs ({
           <span className='value'>{total || 0}</span>
         </div>
         <div className={statItemStyle}>
-          <span>Affichés:</span>
+          <span>Displayed:</span>
           <span className='value'>{spliced || 0}</span>
         </div>
         <div className={statItemStyle}>
-          <span>Utilisateur:</span>
-          <span className='value'>{username || 'Invité'}</span>
+          <span>User:</span>
+          <span className='value'>{username || 'Guest'}</span>
         </div>
       </div>
     </div>

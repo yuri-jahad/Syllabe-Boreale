@@ -1,4 +1,3 @@
-// ===== STYLES =====
 import { css } from '~styled-system/css'
 
 export const searchContainerCSS = css({
@@ -20,9 +19,6 @@ export const inputWrapperCSS = css({
   borderRadius: '0',
   padding: '18px 0 14px 0',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-
-  // Effet de brillance subtil
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -78,10 +74,8 @@ export const modernInputCSS = css({
     transform: 'translateY(-1px)'
   },
 
-  // Autofill
   '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus': {
-    WebkitTextFillColor: '#f8fafc !important',
-    WebkitBoxShadow: '0 0 0 1000px transparent inset !important'
+    WebkitTextFillColor: '#f8fafc !important'
   }
 })
 
@@ -154,7 +148,6 @@ export const suggestionCSS = css({
   letterSpacing: '0.2px'
 })
 
-// ===== COMPOSANT =====
 import { useState, useCallback, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 
@@ -168,7 +161,7 @@ interface SearchInputProps {
 
 export default function SearchInput ({
   handleOnChange,
-  placeholder = 'Rechercher un mot...',
+  placeholder = 'Search for a word...',
   maxLength = 30,
   minLength = 1,
   showSuggestion = true
@@ -219,11 +212,9 @@ export default function SearchInput ({
     [value, handleClear]
   )
 
-  // Logique du compteur
   const charCount = value.length
   const isWarning = charCount >= maxLength * 0.8
   const isError = charCount >= maxLength
-  const isValid = charCount >= minLength && charCount <= maxLength
 
   const counterClass = isError ? 'error' : isWarning ? 'warning' : ''
 
@@ -232,9 +223,9 @@ export default function SearchInput ({
 
     if (charCount < minLength) {
       const remaining = minLength - charCount
-      return `${remaining} caractère${remaining > 1 ? 's' : ''} minimum`
+      return `${remaining} character${remaining > 1 ? 's' : ''} minimum`
     }
-    if (isError) return 'limite atteinte'
+    if (isError) return 'limit reached'
 
     return ''
   }
@@ -242,7 +233,6 @@ export default function SearchInput ({
   return (
     <div className={searchContainerCSS}>
       <div className={`${inputWrapperCSS} ${isFocused ? 'focused' : ''}`}>
-        {/* Input principal */}
         <input
           ref={inputRef}
           className={modernInputCSS}
@@ -256,21 +246,19 @@ export default function SearchInput ({
           spellCheck='false'
         />
 
-        {/* Bouton clear */}
         {value && (
           <button
             className={`${clearButtonCSS} visible`}
             onClick={handleClear}
             tabIndex={-1}
-            aria-label='Effacer (Échap)'
-            title='Effacer'
+            aria-label='Clear (Escape)'
+            title='Clear'
           >
             ×
           </button>
         )}
       </div>
 
-      {/* Métadonnées */}
       {showSuggestion && (
         <div className={metaInfoCSS}>
           <div className={suggestionCSS}>{getSuggestion()}</div>

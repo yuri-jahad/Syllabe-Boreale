@@ -1,20 +1,11 @@
-import Header from '@features/shared/components/header/header'
-import WordInfos from '@/features/word-finder/components/word-finder-infos'
-import { css } from '~styled-system/css'
-import NavigationPanel from '@/features/shared/components/panel-navigation/navigation-panel'
-import { DashboardBackgroundCSS } from '@shared/generic/generic.style'
+import Scene from "@shared/components/scene/scene"
+import WordInfos from "@word-finder/components/word-finder-infos"
 
 
 export default function WordFinder () {
   return (
-    <div className={DashboardBackgroundCSS}>
-      <div>
-        <Header />
-        <div className={css({ display: 'flex' })}>
-          <NavigationPanel />
-          <WordInfos />
-        </div>
-      </div>
-    </div>
+   <Scene>
+      <WordInfos/>
+   </Scene>
   )
 }

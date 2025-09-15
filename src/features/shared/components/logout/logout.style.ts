@@ -1,7 +1,6 @@
 import { css } from '~styled-system/css'
 import { githubStyleBg } from '@shared/generic/generic.style';
 
-// ===== CONTENEUR PRINCIPAL =====
 export const LogoutCSS = css({
   height: '6vh',
   ...githubStyleBg,
@@ -23,7 +22,6 @@ export const LogoutCSS = css({
   }
 })
 
-// ===== BOUTON PRINCIPAL =====
 export const buttonCSS = css({
   width: '100%',
   height: '100%',
@@ -43,7 +41,6 @@ export const buttonCSS = css({
   justifyContent: 'center',
   gap: '10px',
 
-  // Effet de fond qui glisse
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -82,7 +79,6 @@ export const buttonCSS = css({
   }
 })
 
-// ===== CONTENU DU BOUTON =====
 export const buttonContentCSS = css({
   position: 'relative',
   zIndex: 2,
@@ -91,7 +87,6 @@ export const buttonContentCSS = css({
   gap: '10px'
 })
 
-// ===== ICÔNE =====
 export const iconCSS = css({
   width: '16px',
   height: '16px',
@@ -104,7 +99,6 @@ export const iconCSS = css({
   }
 })
 
-// ===== SPINNER =====
 export const spinnerCSS = css({
   width: '16px',
   height: '16px',
@@ -112,14 +106,8 @@ export const spinnerCSS = css({
   borderTop: '2px solid rgba(255, 255, 255, 1)',
   borderRadius: '50%',
   animation: 'spin 1s linear infinite',
-
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
-  }
 })
 
-// ===== VERSION MINIMALISTE =====
 export const minimalContainerCSS = css({
   height: '6vh',
   background: 'rgba(15, 23, 42, 0.3)',

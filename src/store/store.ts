@@ -17,41 +17,33 @@ interface WordToAdd {
 }
 
 interface AppState {
-  // Modal state
   modalIsOpen: boolean
   editRowSelected: any
-
-  // Modal form state
   modalWordName: string
   modalWordTags: ListIds
   modalIsLoading: boolean
-
-  // Add Words Modal state
   addWordsModalWords: WordToAdd[]
   addWordsCurrentWord: string
-
-  // Data management
   dataManagement: any | null
-
-  // === SECTION MOTS ===
   wordsList: FindWordsResponse | null
   wordDefinitions: string | null
   wordSelected: string
-
-  // === SECTION SYLLABES ===
   syllableManagement: string
   syllablesList: FindWordsResponse | null
   syllablesDefinitions: string | null
   syllableSelected: string
   syllableWordsList: FindWordsResponse | null
   syllableWordSelected: string
-  syllableWordDefinitions: string | null
+  syllableWordDefinitions: any
 
-  // Navigation state
   currentList: ListId
   currentPatternWord: string
   currentPatternSyllable: string
   currentPatternSyllableWord: string
+  avatar: string
+  bio: string
+  location: string
+  syllableColor: string
 }
 
 interface AppActions {
@@ -79,7 +71,7 @@ interface AppActions {
 
   // === ACTIONS SECTION MOTS ===
   setWordsList: (list: FindWordsResponse) => void
-  setWordDefinitions: (def: string | null) => void
+  setWordDefinitions: (def: any | null) => void
   setWordSelected: (word: string) => void
   clearWordsCache: () => void
 
@@ -90,7 +82,7 @@ interface AppActions {
   setSyllableSelected: (syllable: string) => void
   setSyllableWordsList: (list: FindWordsResponse) => void
   setSyllableWordSelected: (word: string) => void
-  setSyllableWordDefinitions: (def: string | null) => void
+  setSyllableWordDefinitions: (def: any) => void
   clearSyllablesCache: () => void
 
   // Navigation actions
@@ -99,6 +91,11 @@ interface AppActions {
   setCurrentPatternSyllable: (pattern: string) => void
   setCurrentPatternSyllableWord: (pattern: string) => void
 
+  //profile
+  setAvatar: (avatar: string) => void
+  setLocation: (location: string) => void
+  setSyllableColor: (syllableColor: string) => void
+  setBio: (bio: string) => void
   // Cache global
   clearAllCache: () => void
 }
@@ -114,7 +111,6 @@ const getTagsFromRow = (row: any): ListIds => {
 
 export const useStore = create<AppStore>()(
   devtools((set, get) => ({
-    // État initial
     modalIsOpen: false,
     editRowSelected: null,
     modalWordName: '',
@@ -123,6 +119,12 @@ export const useStore = create<AppStore>()(
     addWordsModalWords: [],
     addWordsCurrentWord: '',
     dataManagement: null,
+
+    // profile
+    avatar: '',
+    syllableColor: '',
+    bio: '',
+    location: '',
 
     // Section mots
     wordsList: null,
@@ -172,8 +174,13 @@ export const useStore = create<AppStore>()(
       })
     },
 
+    setBio: bio => set({ bio }),
+    setSyllableColor: syllableColor => set({ syllableColor }),
+    setLocation: location => set({ location }),
+    
     setModalWordName: name => set({ modalWordName: name }),
     setModalWordTags: tags => set({ modalWordTags: tags }),
+    setAvatar: avatar => set({ avatar: avatar }),
 
     toggleModalWordTag: tag => {
       const { modalWordTags } = get()
@@ -274,8 +281,8 @@ export const useStore = create<AppStore>()(
     setSyllableSelected: syllable =>
       set({
         syllableSelected: syllable,
-        syllableWordSelected: '', // Reset mot sélectionné
-        syllableWordDefinitions: null // Reset définitions
+        syllableWordSelected: '',
+        syllableWordDefinitions: null
       }),
     setSyllableWordsList: list => set({ syllableWordsList: list }),
     setSyllableWordSelected: word => set({ syllableWordSelected: word }),
@@ -316,7 +323,6 @@ export const useStore = create<AppStore>()(
   }))
 )
 
-// === SELECTORS SECTION MOTS ===
 export const useWordsList = () => useStore(state => state.wordsList)
 export const useWordDefinitions = () => useStore(state => state.wordDefinitions)
 export const useWordSelected = () => useStore(state => state.wordSelected)
@@ -326,7 +332,6 @@ export const useSetWordDefinitions = () =>
 export const useSetWordSelected = () => useStore(state => state.setWordSelected)
 export const useClearWordsCache = () => useStore(state => state.clearWordsCache)
 
-// === SELECTORS SECTION SYLLABES ===
 export const useSyllablesList = () => useStore(state => state.syllablesList)
 export const useSyllablesDefinitions = () =>
   useStore(state => state.syllablesDefinitions)
@@ -354,7 +359,6 @@ export const useSetSyllableWordDefinitions = () =>
 export const useClearSyllablesCache = () =>
   useStore(state => state.clearSyllablesCache)
 
-// === SELECTORS COMPOSÉS POUR SECTION MOTS ===
 export const useWordsSection = () => {
   const wordsList = useWordsList()
   const wordDefinitions = useWordDefinitions()
@@ -386,7 +390,6 @@ export const useWordsSection = () => {
   )
 }
 
-// === SELECTORS COMPOSÉS POUR SECTION SYLLABES ===
 export const useSyllablesSection = () => {
   const syllablesList = useSyllablesList()
   const syllablesDefinitions = useSyllablesDefinitions()
@@ -413,7 +416,6 @@ export const useSyllablesSection = () => {
       syllableWordSelected,
       syllableWordDefinitions,
 
-      // Actions
       setSyllablesList,
       setSyllablesDefinitions,
       setSyllableSelected,
@@ -440,7 +442,6 @@ export const useSyllablesSection = () => {
   )
 }
 
-// === SELECTORS EXISTANTS (conservés pour compatibilité) ===
 export const useModalIsOpen = () => useStore(state => state.modalIsOpen)
 export const useEditRowSelected = () => useStore(state => state.editRowSelected)
 export const useDataManagement = () => useStore(state => state.dataManagement)
@@ -462,7 +463,6 @@ export const useCurrentPatternWord = () =>
 export const useCurrentPatternSyllable = () =>
   useStore(state => state.currentPatternSyllable)
 
-// Actions existantes
 export const useOpenModal = () => useStore(state => state.openModal)
 export const useCloseModal = () => useStore(state => state.closeModal)
 export const useSetModalWordName = () =>
@@ -498,7 +498,6 @@ export const useSetCurrentPatternSyllable = () =>
   useStore(state => state.setCurrentPatternSyllable)
 export const useClearAllCache = () => useStore(state => state.clearAllCache)
 
-// Selectors composés existants
 export const useModalForm = () => {
   const modalWordName = useModalWordName()
   const modalWordTags = useModalWordTags()
@@ -612,6 +611,5 @@ export const useModal = () => {
   )
 }
 
-// Compatibilité
 export const useCurrentListData = () => useStore(state => state.currentList)
 export const useModalState = () => useStore(state => state.modalIsOpen)

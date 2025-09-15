@@ -1,13 +1,13 @@
 import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
 import { SESSION_QUERY_KEY } from '@shared/hooks/shared-session.hook'
 import { api } from '@eden'
+import { StoreInitializer } from '@/store/store-initializer'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardLayout,
   beforeLoad: async ({ context }) => {
     try {
-      // ✅ 1. Vérifier l'authentification d'abord
-      const authData = context.queryClient?.getQueryData(['auth'])
+      const authData = context.queryClient?.getQueryData(['auth']) as any
       const isAuthenticated = authData?.data?.isAuthenticated
       const user = authData?.data?.user
 
@@ -48,9 +48,11 @@ export const Route = createFileRoute('/dashboard')({
 function DashboardLayout () {
   return (
     <div className='protected-layout'>
-      <main>
-        <Outlet />
-      </main>
+      <StoreInitializer>
+        <main>
+          <Outlet />
+        </main>
+      </StoreInitializer>
     </div>
   )
 }

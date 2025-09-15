@@ -1,8 +1,4 @@
-import {
-  githubStyleBg,
-  stripeStyleBg,
-  tailwindStyleBg
-} from '@shared/generic/generic.style'
+import { stripeStyleBg } from '@shared/generic/generic.style'
 import { css } from '~styled-system/css'
 
 export const topSectionCSS = css({
@@ -19,19 +15,61 @@ export const bottomSectionCSS = css({
   height: { base: 'auto', lg: '55%' }
 })
 
-// Conteneur principal des trois blocs
 export const threeBlocksContainerCSS = css({
   display: 'grid',
-  gridTemplateColumns: { base: '1fr', md: '1fr 1fr 1.5fr' },
   paddingTop: '12px',
   gap: '16px',
-  height: '62vh',
-  width: '85vw',
-  maxWidth: '1600px',
-  margin: '0 auto'
+  margin: '0 auto',
+  width: '100%',
+  padding: '0 16px',
+
+  gridTemplateColumns: '1fr',
+  height: 'auto',
+  maxWidth: '100vw',
+
+  '@media (min-width: 480px)': {
+    gridTemplateColumns: '1fr',
+    gap: '18px',
+    padding: '0 20px'
+  },
+
+  '@media (min-width: 640px)': {
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+    padding: '0 24px',
+    gridTemplateRows: 'auto auto',
+    maxWidth: '100vw'
+  },
+
+  '@media (min-width: 768px)': {
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+    padding: '0 32px'
+  },
+
+  '@media (min-width: 1024px)': {
+    gridTemplateColumns: '1fr 1fr 1.5fr',
+    gap: '24px',
+    height: '65vh',
+    maxWidth: '1200px',
+    padding: '0'
+  },
+
+  // Medium desktop (1280px+)
+  '@media (min-width: 1280px)': {
+    gridTemplateColumns: '1fr 1fr 1.5fr',
+    maxWidth: '1400px',
+    gap: '28px'
+  },
+
+  // Large desktop (1536px+)
+  '@media (min-width: 1536px)': {
+    gridTemplateColumns: '1fr 1fr 1.5fr',
+    maxWidth: '1600px',
+    gap: '32px'
+  }
 })
 
-// Bloc de base
 export const blockBaseCSS = css({
   padding: 0,
   borderRadius: '8px',
@@ -42,27 +80,72 @@ export const blockBaseCSS = css({
   display: 'flex',
   flexDirection: 'column',
   transition: 'all 0.3s ease',
+  width: '100%',
+
+  // Mobile - Plus petits et mieux adaptés
+  minHeight: '250px',
+  maxHeight: '300px',
+
+  // Small tablet
+  '@media (min-width: 480px)': {
+    minHeight: '280px',
+    maxHeight: '350px'
+  },
+
+  // Tablet - 2 colonnes, hauteur réduite
+  '@media (min-width: 640px)': {
+    minHeight: '300px',
+    maxHeight: '400px'
+  },
+
+  // Tablet landscape
+  '@media (min-width: 768px)': {
+    minHeight: '350px',
+    maxHeight: '450px'
+  },
+
+  // Desktop - largeur minimale pour éviter le rétrécissement
+  '@media (min-width: 1024px)': {
+    minWidth: '280px',
+    minHeight: '450px',
+    maxHeight: 'none'
+  },
+
+  // Large desktop
+  '@media (min-width: 1280px)': {
+    minWidth: '320px',
+    minHeight: '480px'
+  },
 
   '&:hover': {
     borderColor: 'rgba(64, 194, 255, 0.2)'
   }
 })
 
-// Headers des blocs
 export const blockHeaderCSS = css({
   padding: '16px 20px',
   background: 'rgba(30, 41, 59, 0.6)',
   borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between'
+  justifyContent: 'space-between',
+  flexShrink: 0,
+  minHeight: '56px',
+
+  // Mobile
+  '@media (max-width: 640px)': {
+    padding: '12px 16px',
+    minHeight: '48px'
+  }
 })
 
 export const blockTitleCSS = css({
   color: '#f1f5f9',
   fontSize: '14px',
   fontWeight: '600',
-  margin: 0
+  margin: 0,
+  flexShrink: 0,
+  minWidth: '120px'
 })
 
 export const blockBadgeCSS = css({
@@ -71,10 +154,13 @@ export const blockBadgeCSS = css({
   background: 'rgba(59, 130, 246, 0.1)',
   padding: '2px 8px',
   borderRadius: '4px',
-  fontWeight: '500'
+  fontWeight: '500',
+  minWidth: '60px',
+  textAlign: 'center',
+  display: 'inline-block',
+  whiteSpace: 'nowrap'
 })
 
-// Contenus des blocs
 export const blockContentCSS = css({
   flex: 1,
   overflow: 'hidden',
@@ -107,7 +193,6 @@ export const blockScrollAreaCSS = css({
   }
 })
 
-// Items des listes - Espacement légèrement augmenté
 export const listItemCSS = css({
   padding: '9px 16px',
   margin: '0',
@@ -119,6 +204,10 @@ export const listItemCSS = css({
   borderLeft: '3px solid transparent',
   borderBottom: '1px solid rgba(148, 163, 184, 0.06)',
   transition: 'all 0.2s ease',
+  wordBreak: 'break-word',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 
   '&:hover': {
     background: 'rgba(30, 41, 59, 0.5)',
@@ -138,9 +227,6 @@ export const listItemActiveCSS = css({
   fontWeight: '600'
 })
 
-// Syllabe highlighting
-
-// États vides et de chargement
 export const emptyStateCSS = css({
   display: 'flex',
   flexDirection: 'column',
@@ -193,14 +279,8 @@ export const spinnerCSS = css({
   borderTop: '2px solid #94a3b8',
   borderRadius: '50%',
   animation: 'spin 1s linear infinite',
-  marginBottom: '12px',
-
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
-  }
+  marginBottom: '12px'
 })
-
 
 export const definitionHeaderCSS = css({
   display: 'flex',
@@ -238,7 +318,6 @@ export const definitionSourceCSS = css({
   border: '1px solid rgba(148, 163, 184, 0.1)'
 })
 
-// Pagination
 export const paginationContainerCSS = css({
   display: 'flex',
   alignItems: 'center',
@@ -284,7 +363,6 @@ export const paginationInfoCSS = css({
   textAlign: 'center'
 })
 
-// Styles pour compatibilité
 export const SquareCSS = css({
   padding: 0,
   borderRadius: '8px',
@@ -297,34 +375,77 @@ export const SquareCSS = css({
     borderColor: 'rgba(64, 194, 255, 0.2)'
   },
 
-  width: '85vw',
-  height: '360px',
-  '@media (min-width: 640px)': { width: '42vw', height: '380px' },
-  '@media (min-width: 768px)': { width: '32vw', height: '420px' },
-  '@media (min-width: 1024px)': { width: '34vw', height: '500px' }
+  // Mobile - Beaucoup plus petits
+  width: '95vw',
+  height: '30vh',
+  minHeight: '250px',
+  maxHeight: '300px',
+
+  '@media (min-width: 480px)': {
+    width: '90vw',
+    height: '35vh',
+    minHeight: '280px',
+    maxHeight: '350px'
+  },
+
+  '@media (min-width: 640px)': {
+    width: '45vw',
+    height: '40vh',
+    minHeight: '300px',
+    maxHeight: '400px'
+  },
+
+  '@media (min-width: 768px)': {
+    width: '35vw',
+    height: '45vh',
+    minHeight: '350px',
+    maxHeight: '450px'
+  },
+
+  // Desktop - Tailles normales
+  '@media (min-width: 1024px)': {
+    width: '32vw',
+    height: '62vh',
+    minHeight: '520px',
+    maxHeight: 'none'
+  },
+
+  '@media (min-width: 1200px)': {
+    width: '30vw',
+    height: '65vh',
+    minHeight: '580px'
+  }
 })
 
 export const SquareLeftCSS = css({
-  margin: '0 12px 20px 0',
-  '@media (min-width: 640px)': { margin: '0 20px 25px 0' },
-  '@media (min-width: 768px)': { margin: '0 30px 35px 0' },
-  '@media (min-width: 1024px)': { margin: '0 40px 40px 0' }
+  margin: '0 0 16px 0',
+
+  '@media (min-width: 640px)': {
+    margin: '0 16px 20px 0'
+  },
+  '@media (min-width: 768px)': {
+    margin: '0 24px 30px 0'
+  },
+  '@media (min-width: 1024px)': {
+    margin: '0 32px 40px 0'
+  }
 })
 
 export const SquareRightCSS = css({
-  transform: 'translateY(2%)',
-  margin: '0 0 20px 12px',
+  transform: 'none',
+  margin: '0 0 16px 0',
+
   '@media (min-width: 640px)': {
-    transform: 'translateY(3%)',
-    margin: '0 0 25px 20px'
+    transform: 'translateY(2%)',
+    margin: '0 0 20px 16px'
   },
   '@media (min-width: 768px)': {
-    transform: 'translateY(5%)',
-    margin: '0 0 35px 30px'
+    transform: 'translateY(4%)',
+    margin: '0 0 30px 24px'
   },
   '@media (min-width: 1024px)': {
-    transform: 'translateY(7%)',
-    margin: '0 0 40px 40px'
+    transform: 'translateY(6%)',
+    margin: '0 0 40px 32px'
   }
 })
 
@@ -539,11 +660,6 @@ export const loadingDefCSS = css({
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     marginBottom: '12px'
-  },
-
-  '@keyframes spin': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' }
   }
 })
 
@@ -568,7 +684,6 @@ export const errorDefCSS = css({
   }
 })
 
-// Styles de table
 export const tableContainerCSS = css({
   height: '70vh',
   ...stripeStyleBg,
@@ -617,7 +732,6 @@ export const placeholderTextCSS = css({
   fontStyle: 'italic'
 })
 
-// Bear container
 export const bearContainerCSS = css({
   display: 'flex',
   justifyContent: 'center',
@@ -642,4 +756,26 @@ export const moreIndicatorCSS = css({
   background: 'rgba(30, 41, 59, 0.3)',
   borderTop: '1px solid rgba(148, 163, 184, 0.1)',
   fontStyle: 'italic'
+})
+
+// Classes utilitaires ajoutées pour optimisation mobile
+export const mobileCompactCSS = css({
+  '@media (max-width: 1023px)': {
+    '& > *': {
+      maxHeight: '350px !important',
+      overflow: 'hidden'
+    }
+  }
+})
+
+export const mobileOptimizedContainerCSS = css({
+  '@media (max-width: 1023px)': {
+    padding: '8px',
+    gap: '12px !important',
+
+    '& .block': {
+      minHeight: '200px',
+      maxHeight: '300px'
+    }
+  }
 })

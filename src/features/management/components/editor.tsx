@@ -1,13 +1,6 @@
-import Header from '@/features/shared/components/header/header'
-import PanelInfos from '@shared/components/panel-infos/panel-infos'
-import NavigationPanel from '@/features/shared/components/panel-navigation/navigation-panel'
-import {
-  DashboardBackgroundCSS,
-  DashboardCentralCSS
-} from '@shared/generic/generic.style'
-
+import Scene from '@shared/components/scene/scene'
 import SearchInput from '../../shared/components/input-search/input-search'
-import { ChangeEvent, useState, useMemo, useEffect, useCallback } from 'react'
+import { ChangeEvent, useState, useMemo, useCallback, useRef } from 'react'
 import { ContainerInputCSS } from './editor-table.style'
 import { useEditorSearch } from '../hook/use-editor'
 import { useQueryClient } from '@tanstack/react-query'
@@ -24,8 +17,8 @@ import Modal from '@shared/components/modal/modal'
 import EditorModalUpdate from '@management/components/editor-modal-update'
 import { WordItem } from '@management/types/editor.types'
 import { useSession } from '@/features/shared/hooks/shared-session.hook'
+import { useDebouncedEffect } from '@/features/shared/hooks/shared-use-debounced-effect'
 
-// ⚡ STYLES POUR LES COMPOSANTS
 const loaderContainer = css({
   display: 'flex',
   alignItems: 'center',
@@ -34,7 +27,8 @@ const loaderContainer = css({
   background: 'rgba(15, 23, 42, 0.4)',
   borderRadius: '8px',
   margin: '20px auto',
-  width: 'min(94%, 1400px)',
+  width: '100%',
+  maxWidth: '1400px',
   border: '1px solid rgba(148, 163, 184, 0.1)'
 })
 
@@ -61,7 +55,62 @@ const dot = css({
   '&:nth-child(3)': { animationDelay: '0s' }
 })
 
-// ⚡ COMPOSANT LOADER
+const mainContentStyle = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
+  padding: '20px',
+  width: '100%',
+  height: '100%',
+  overflow: 'hidden'
+})
+
+const headerSectionStyle = css({
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '1400px',
+  margin: '0 auto',
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '12px'
+  }
+})
+
+const searchSectionStyle = css({
+  flex: 1,
+  minWidth: '0',
+  '@media (max-width: 768px)': {
+    width: '100%'
+  }
+})
+
+const contentAreaStyle = css({
+  flex: 1,
+  overflow: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px'
+})
+
+const errorContainerStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '40px',
+  background: 'rgba(239, 68, 68, 0.1)',
+  border: '1px solid rgba(239, 68, 68, 0.2)',
+  borderRadius: '8px',
+  margin: '20px auto',
+  width: '100%',
+  maxWidth: '1400px',
+  color: '#ef4444',
+  fontSize: '14px'
+})
+
 const SearchLoader = () => (
   <>
     <style>{`
@@ -78,7 +127,7 @@ const SearchLoader = () => (
     `}</style>
     <div className={loaderContainer}>
       <div className={loaderContent}>
-        <span className={loaderText}>Recherche en cours</span>
+        <span className={loaderText}>Search in progress</span>
         <div style={{ display: 'flex', gap: '4px' }}>
           <div className={dot}></div>
           <div className={dot}></div>
@@ -89,28 +138,10 @@ const SearchLoader = () => (
   </>
 )
 
-// ⚡ COMPOSANT ERROR
 const SearchError = () => (
-  <div
-    className={css({
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px',
-      background: 'rgba(239, 68, 68, 0.1)',
-      border: '1px solid rgba(239, 68, 68, 0.2)',
-      borderRadius: '8px',
-      margin: '20px auto',
-      width: 'min(94%, 1400px)',
-      color: '#ef4444',
-      fontSize: '14px'
-    })}
-  >
-    Erreur lors de la recherche
-  </div>
+  <div className={errorContainerStyle}>Error during search</div>
 )
 
-// ⚡ COMPOSANT BOUTON ADD
 const AddButton = ({
   onClick,
   disabled
@@ -134,6 +165,8 @@ const AddButton = ({
       fontWeight: '500',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
+      whiteSpace: 'nowrap',
+      flexShrink: 0,
       '&:hover': {
         background: 'rgba(59, 130, 246, 0.2)',
         borderColor: 'rgba(59, 130, 246, 0.4)',
@@ -146,17 +179,17 @@ const AddButton = ({
     })}
   >
     <span>+</span>
-    <span>Nouveau mot</span>
+    <span>New word</span>
   </button>
 )
 
-// ⚡ COMPOSANT PRINCIPAL MANAGEMENT
 export default function Management () {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const currentUserId = user?.id
+  const lastSearchRef = useRef<string>('')
 
-  // ⚡ ÉTATS POUR LES MODALS
+  const [editorPattern, setEditorPattern] = useState<string>('edit')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editRowSelected, setEditRowSelected] = useState<WordItem | null>(null)
@@ -168,7 +201,6 @@ export default function Management () {
     sortOrder: 'desc'
   })
 
-  // ⚡ HOOK DE RECHERCHE
   const {
     mutate: searchWords,
     isPending: isSearching,
@@ -178,47 +210,52 @@ export default function Management () {
   const { data } = useSession()
   const listNames = data?.data.allListsDetails.listNames
 
-  useMemo(() => {
-    searchWords('edit')
-  }, [searchWords])
-
-  // ⚡ DONNÉES DE RECHERCHE
   const currentSearch = queryClient.getQueryData(['editor', 'currentSearch'])
   const searchResults: any = currentSearch
   const isLoading = isSearching
   const error = searchError
 
-  // ⚡ DONNÉES FILTRÉES
   const filteredData = useMemo(() => {
     if (!searchResults?.data?.data) return null
-    console.log(searchResults)
     return {
       ...searchResults.data,
       data: applyFilters(listNames, searchResults.data.data, filters)
     }
   }, [searchResults, filters])
 
-  // ⚡ HANDLERS
-  const handleOnChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const syllable = e.target.value.trim()
-      if (syllable.length > 0) {
-        searchWords(syllable)
-      } else {
-        queryClient.removeQueries({ queryKey: ['editor', 'currentSearch'] })
-        queryClient.removeQueries({ queryKey: ['editor', 'currentSearchTerm'] })
-
-        searchWords('edit')
+  useDebouncedEffect(() => {
+    if (editorPattern && editorPattern.length > 0) {
+      if (lastSearchRef.current === editorPattern) {
+        return
       }
-    },
-    [queryClient, searchWords]
-  )
 
-  // ⚡ HANDLERS POUR MODAL ADD
+      const cacheKey = ['editor', 'wordSearch', editorPattern]
+      const cachedData = queryClient.getQueryData(cacheKey)
+
+      if (cachedData) {
+        queryClient.setQueryData(['editor', 'currentSearch'], cachedData)
+        queryClient.setQueryData(['editor', 'currentSearchTerm'], editorPattern)
+        return
+      }
+
+      lastSearchRef.current = editorPattern
+      searchWords(editorPattern)
+    }
+  }, [editorPattern])
+
+  const handleOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const syllable = e.target.value.trim()
+    if (syllable.length > 0) {
+      setEditorPattern(syllable)
+    } else {
+      setEditorPattern('')
+      lastSearchRef.current = ''
+    }
+  }, [])
+
   const handleAddWords = () => setShowAddModal(true)
   const handleCloseAddModal = () => setShowAddModal(false)
 
-  // ⚡ HANDLERS POUR MODAL EDIT
   const handleEditRow = (row: WordItem) => {
     setEditRowSelected(row)
     setShowEditModal(true)
@@ -229,59 +266,42 @@ export default function Management () {
     setEditRowSelected(null)
   }
 
-  // ⚡ HANDLER POUR FILTRES
   const handleFiltersChange = (newFilters: FilterState) =>
     setFilters(newFilters)
 
   return (
-    <div className={DashboardBackgroundCSS}>
-      <Header />
-      <div style={{ display: 'flex' }}>
-        <NavigationPanel />
-        <div className={DashboardCentralCSS}>
-          <div
-            className={css({
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: '20px',
-              margin: '0 auto 16px',
-              width: 'min(94%, 1400px)'
-            })}
-          >
-            <div style={{ flex: 1 }}>
-              <HeaderSpecs
-                total={searchResults?.data.total}
-                spliced={filteredData?.data?.length}
-                username={user?.username || 'Invité'}
+    <Scene>
+      <div className={mainContentStyle}>
+        <div className={headerSectionStyle}>
+          <div className={searchSectionStyle}>
+            <HeaderSpecs
+              total={searchResults?.data.total}
+              spliced={filteredData?.data?.length}
+              username={user?.username || 'Guest'}
+            />
+            <div className={ContainerInputCSS}>
+              <SearchInput
+                handleOnChange={handleOnChange}
+                placeholder='Search for a word...'
               />
-              <div className={ContainerInputCSS}>
-                <SearchInput
-                  handleOnChange={handleOnChange}
-                  placeholder='Rechercher un mot...'
-                />
-              </div>
             </div>
-            <AddButton onClick={handleAddWords} disabled={isLoading} />
           </div>
+          <AddButton onClick={handleAddWords} disabled={isLoading} />
+        </div>
 
-          {/* ⚡ FILTRES */}
+        <div className={contentAreaStyle}>
           {searchResults?.data && (
             <TableFilters onFiltersChange={handleFiltersChange} />
           )}
-          <div>
-            {isLoading && <SearchLoader />}
-            {error && <SearchError />}
-            {!isLoading && !error && filteredData && (
-              <EditorTable data={filteredData} onEditRow={handleEditRow} />
-            )}
-          </div>
 
-          <PanelInfos />
+          {isLoading && <SearchLoader />}
+          {error && <SearchError />}
+          {!isLoading && !error && filteredData && (
+            <EditorTable data={filteredData} onEditRow={handleEditRow} />
+          )}
         </div>
       </div>
 
-      {/* ⚡ MODAL ADD WORDS */}
       {showAddModal && currentUserId && (
         <Modal onClose={handleCloseAddModal} showCloseButton={true}>
           <AddWordsModal
@@ -291,7 +311,6 @@ export default function Management () {
         </Modal>
       )}
 
-      {/* ⚡ MODAL EDIT WORD */}
       {showEditModal && editRowSelected && (
         <Modal onClose={handleCloseEditModal} showCloseButton={false}>
           <EditorModalUpdate
@@ -300,6 +319,6 @@ export default function Management () {
           />
         </Modal>
       )}
-    </div>
+    </Scene>
   )
 }
